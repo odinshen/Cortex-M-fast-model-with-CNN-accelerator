@@ -1,0 +1,19 @@
+PVLIB_HOME='/home/odishe01/FastModel/FastModelsPortfolio_11.10'
+SYSTEMC_HOME='/home/odishe01/FastModel/SystemC/Accellera/SystemC'
+TLM_HOME=''
+CXXFLAGS_EXT='-pthread -march=core2 -O3 -Wall -std=c++11 -Wno-deprecated -Wno-unused-function -pipe -fPIC'
+CPPFLAGS_EXT='-pthread -march=core2 -O3 -Wall -std=c++11 -Wno-deprecated -Wno-unused-function -pipe -fPIC'
+LDLIBS='/home/odishe01/FastModel/FastModelsPortfolio_11.10/lib/Linux64_GCC-7.3/libarmctmodel.a /home/odishe01/FastModel/FastModelsPortfolio_11.10/plugins/Linux64_GCC-7.3/librosetta.a /home/odishe01/FastModel/FastModelsPortfolio_11.10/plugins/Linux64_GCC-7.3/libctplugin.a /home/odishe01/FastModel/FastModelsPortfolio_11.10/lib/Linux64_GCC-7.3/libcomponents.a /home/odishe01/FastModel/FastModelsPortfolio_11.10/lib/Linux64_GCC-7.3/libz.a /home/odishe01/FastModel/FastModelsPortfolio_11.10/lib/Linux64_GCC-7.3/libpvbus.a /home/odishe01/FastModel/FastModelsPortfolio_11.10/lib/Linux64_GCC-7.3/libfmruntime.a /home/odishe01/FastModel/FastModelsPortfolio_11.10/Iris/Linux64_GCC-7.3/libIrisSupport.a'
+LDFLAGS='-pthread -Wl,--no-undefined -fPIC -Wl,-rpath,'$ORIGIN',-z,origin'
+-- /home/odishe01/FastModel/FastModelsPortfolio_11.10/include/pv/PVVersion.h --
+/* Copyright 2018 ARM Limited. All rights reserved. */
+#ifndef PVVERSION_H
+#define PVVERSION_H
+#define SYSGEN_PVMODELLIB_MAJOR 11
+#define SYSGEN_PVMODELLIB_MINOR 10
+#define SYSGEN_PVMODELLIB_BUILD 22
+#define SYSGEN_PVMODELLIB_VER_STR "11.10"
+#define SYSGEN_PVMODELLIB_MAJOR_STR "11"
+#define SYSGEN_PVMODELLIB_MINOR_STR "10"
+#define SYSGEN_PVMODELLIB_BUILD_STR "22"
+#endif
