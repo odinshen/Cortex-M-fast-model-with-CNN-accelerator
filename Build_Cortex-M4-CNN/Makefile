@@ -12,7 +12,7 @@ include $(PROJECT_PATH)/../../../Common/Makefile.common
 
 # Specify objects and target(s) to build
 SRCS = $(wildcard $(PROJECT_PATH)/../Source-CNN/*.cpp)
-TARGET = EVS_DMA_Cortex-M4-CNN.x
+TARGET = EVS_Cortex-M4-CNN.x
 
 # Determine others...
 GENDIR = ./$(CONFIG)/gen
@@ -56,3 +56,6 @@ CXX_CMD = $(CXX) $(CXXFLAGS) -o $(TARGET) $(SRCS) $(LDFLAGS) $(SYSTEMLIBS)
 	-rm -f ./lib$(EVSLIB).so
 
 
+ rel_gcc73_64:
+	cp $(BUILDDIR)/lib$(EVSLIB).so ./
+	$(CXX_CMD)

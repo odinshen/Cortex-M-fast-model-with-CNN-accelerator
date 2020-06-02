@@ -12,7 +12,7 @@ include $(PROJECT_PATH)/../../../Common/Makefile.common
 
 # Specify objects and target(s) to build
 SRCS = $(wildcard $(PROJECT_PATH)/../Source-CNN/*.cpp)
-TARGET = EVS_DMA_Cortex-M55-CNN.x
+TARGET = EVS_Cortex-M55-CNN.x
 
 # Determine others...
 GENDIR = ./$(CONFIG)/gen

@@ -74,7 +74,7 @@ pv_cnn::read(int id,
                 return (amba_pv::AMBA_PV_SLVERR);
             }
             (* reinterpret_cast<unsigned int *>(data)) = m_pv_cnn_src_addr;
-            std::cout << "DEBUG\t" << name() << std::showbase << std::hex;
+            std::cout << "[  SC DBG  ]\t" << name() << std::showbase << std::hex;
             std::cout << ": read pv_cnn source address register, returns ";
             std::cout << m_pv_cnn_src_addr << std::endl;
             break;
@@ -89,7 +89,7 @@ pv_cnn::read(int id,
                 return (amba_pv::AMBA_PV_SLVERR);
             }
             (* reinterpret_cast<unsigned int *>(data)) = m_pv_cnn_dst_addr;
-            std::cout << "DEBUG\t" << name() << std::showbase << std::hex;
+            std::cout << "[  SC DBG  ]\t" << name() << std::showbase << std::hex;
             std::cout << ": read pv_cnn destination address register, returns ";
             std::cout << m_pv_cnn_dst_addr << std::endl;
             break;  
@@ -102,7 +102,7 @@ pv_cnn::read(int id,
                 return (amba_pv::AMBA_PV_SLVERR);
             }
             (* reinterpret_cast<unsigned int *>(data)) = m_pv_cnn_length;
-            std::cout << "DEBUG\t" << name() << std::showbase << std::hex;
+            std::cout << "[  SC DBG  ]\t" << name() << std::showbase << std::hex;
             std::cout << ": read pv_cnn length register, returns ";
             std::cout << m_pv_cnn_length << std::endl;
             break;  
@@ -115,7 +115,7 @@ pv_cnn::read(int id,
                 return (amba_pv::AMBA_PV_SLVERR);
             }
             (* data) = m_pv_cnn_control;
-            std::cout << "DEBUG\t" << name() << std::showbase << std::hex;
+            std::cout << "[  SC DBG  ]\t" << name() << std::showbase << std::hex;
             std::cout << ": read pv_cnn control register, returns ";
             std::cout << (int) m_pv_cnn_control << std::endl;
             break;
@@ -150,7 +150,7 @@ pv_cnn::write(int id,
                 return (amba_pv::AMBA_PV_SLVERR);
             }
             m_pv_cnn_src_addr = (* reinterpret_cast<unsigned int *>(data));
-            std::cout << "DEBUG\t" << name() << std::showbase << std::hex;
+            std::cout << "[  SC DBG  ]\t" << name() << std::showbase << std::hex;
             std::cout << ": write " << m_pv_cnn_src_addr;
             std::cout << " in pv_cnn source address register\n";
             break;
@@ -165,7 +165,7 @@ pv_cnn::write(int id,
                 return (amba_pv::AMBA_PV_SLVERR);
             }
             m_pv_cnn_dst_addr = (* reinterpret_cast<unsigned int *>(data));
-            std::cout << "DEBUG\t" << name() << std::showbase << std::hex;
+            std::cout << "[  SC DBG  ]\t" << name() << std::showbase << std::hex;
             std::cout << ": write " << m_pv_cnn_dst_addr;
             std::cout << " in pv_cnn destination address register\n";
             break;
@@ -178,7 +178,7 @@ pv_cnn::write(int id,
                 return (amba_pv::AMBA_PV_SLVERR);
             }
             m_pv_cnn_length = (* reinterpret_cast<unsigned int *>(data));
-            std::cout << "DEBUG\t" << name() << std::showbase << std::hex;
+            std::cout << "[  SC DBG  ]\t" << name() << std::showbase << std::hex;
             std::cout << ": write " << m_pv_cnn_length;
             std::cout << " in pv_cnn length register\n";
             break;  
@@ -190,13 +190,13 @@ pv_cnn::write(int id,
                                   "invalid write access on control register");
                 return (amba_pv::AMBA_PV_SLVERR);
             }
-            std::cout << "DEBUG\t" << name() << std::showbase << std::hex;
+            std::cout << "[  SC DBG  ]\t" << name() << std::showbase << std::hex;
             std::cout << ": write " << (unsigned int) (* data);
             std::cout << " in pv_cnn control register\n";
             if (((* data) & START) && (!( m_pv_cnn_control & START))) {
                 m_start_transfer.notify(t);
                 m_pv_cnn_control |= START;
-                std::cout << "DEBUG\t" << name() << ": pv_cnn started\n";
+                std::cout << "[  SC DBG  ]\t" << name() << ": pv_cnn started\n";
             }
             if ((!((* data) & IRQ)) && (m_pv_cnn_control & IRQ)) {
                 m_pv_cnn_control &= ~IRQ;
@@ -320,10 +320,10 @@ pv_cnn::debug_write(int socket_id,
  */
 void pv_cnn::irq() {
     if (m_pv_cnn_control & IRQ) {
-        std::cout << "DEBUG\t" << name() << ": rise end transfer IRQ \n";
+        std::cout << "[  SC DBG  ]\t" << name() << ": rise end transfer IRQ \n";
         pv_cnn_irq_out.set_state(true);
     } else {
-        std::cout << "DEBUG\t" << name() << ": clear end transfer IRQ \n";
+        std::cout << "[  SC DBG  ]\t" << name() << ": clear end transfer IRQ \n";
         pv_cnn_irq_out.set_state(false);  
     }
 }
@@ -337,10 +337,10 @@ void pv_cnn::transfer() {
     sc_core::sc_time t = sc_core::SC_ZERO_TIME;
 
 
-    std::cout << " [ Odin ] CNN test \n";
+    std::cout << "[  SC DBG  ]CNN test \n";
 
     if (m_pv_cnn_control & START) {
-        std::cout << "DEBUG\t" << name() << std::showbase << std::hex;
+        std::cout << "[  SC DBG  ]\t" << name() << std::showbase << std::hex;
         std::cout << ": pv_cnn transfer started. Source address: ";
         std::cout << m_pv_cnn_src_addr << " - destination address: ";
         std::cout << m_pv_cnn_dst_addr << " - length: " << std::dec;
@@ -371,7 +371,7 @@ void pv_cnn::transfer() {
             }
 
             /* Output source bock using debug transactions.... */
-            std::cout << "DEBUG\t" << name() << std::dec
+            std::cout << "[  SC DBG  ]\t" << name() << std::dec
                       << ": source block ("
                       << sc_dt::sc_min(BURST_LENGTH, nb_word - n) * 8
                       << " bytes) at " << std::showbase << std::hex
@@ -440,7 +440,7 @@ void pv_cnn::transfer() {
             }
 
             /* Output destination bock using debug transactions... */
-            std::cout << "DEBUG\t" << name() << std::dec
+            std::cout << "[  SC DBG  ]\t" << name() << std::dec
                       << ": destination block ("
                       << sc_dt::sc_min(BURST_LENGTH, nb_word - n) * 8
                       << " bytes) at " << std::showbase << std::hex

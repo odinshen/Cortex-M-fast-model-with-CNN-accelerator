@@ -193,13 +193,13 @@ $(DEPENDENCY_FILE):
 APPLICATION=
 
 # Objects used by all targets
-COMMON_OBJECTS = gen/Comp_1.o gen/Comp_2.o gen/CADI_Ctors_DSO.o gen/DMA_Utils.o
+COMMON_OBJECTS = gen/Comp_1.o gen/CADI_Ctors_DSO.o gen/DMA_Utils.o
 
 # Objects specific to classic SystemC export
 SC_OBJECTS      = 
 
 # Object which are not safe to link into a DSO used by SCX
-NONDSO_OBJECTS  = gen/Comp_NonDSO_1.o gen/Comp_NonDSO_2.o gen/Comp_NonDSO_3.o gen/Comp_NonDSO_4.o gen/Comp_NonDSO_5.o gen/CADI_Ctors_NonDSO.o gen/scx_evs_DMA.o
+NONDSO_OBJECTS  = gen/Comp_NonDSO_1.o gen/CADI_Ctors_NonDSO.o gen/scx_evs_DMA.o
 
 # Objects specific to MI SystemC export
 SCX_OBJECTS     = gen/scx_report_handler.o gen/scx_simcontroller.o gen/scx_scheduler_mapping.o
@@ -235,9 +235,6 @@ post_build:
 gen/Comp_1.o: gen/Comp_1.cpp
 	$(CXX)  $(CXXFLAGS_EXT)  $(CPPFLAGS_EXT) -DSG_TARGET_SYSTEMC -DSG_BUILDING_DSO_DMA  -fvisibility=hidden -MMD -c -o gen/Comp_1.o  gen/Comp_1.cpp
 
-gen/Comp_2.o: gen/Comp_2.cpp
-	$(CXX)  $(CXXFLAGS_EXT)  $(CPPFLAGS_EXT) -DSG_TARGET_SYSTEMC -DSG_BUILDING_DSO_DMA  -fvisibility=hidden -MMD -c -o gen/Comp_2.o  gen/Comp_2.cpp
-
 gen/CADI_Ctors_DSO.o: gen/CADI_Ctors_DSO.cpp
 	$(CXX)  $(CXXFLAGS_EXT)  $(CPPFLAGS_EXT) -DSG_TARGET_SYSTEMC -DSG_BUILDING_DSO_DMA  -fvisibility=hidden  -O0 -MMD -c -o gen/CADI_Ctors_DSO.o  gen/CADI_Ctors_DSO.cpp
 
@@ -246,18 +243,6 @@ gen/DMA_Utils.o: gen/DMA_Utils.cpp
 
 gen/Comp_NonDSO_1.o: gen/Comp_NonDSO_1.cpp
 	$(CXX)  $(CXXFLAGS_EXT)  $(CPPFLAGS_EXT) -DSG_TARGET_SYSTEMC  -fvisibility=hidden -MMD -c -o gen/Comp_NonDSO_1.o  gen/Comp_NonDSO_1.cpp
-
-gen/Comp_NonDSO_2.o: gen/Comp_NonDSO_2.cpp
-	$(CXX)  $(CXXFLAGS_EXT)  $(CPPFLAGS_EXT) -DSG_TARGET_SYSTEMC  -fvisibility=hidden -MMD -c -o gen/Comp_NonDSO_2.o  gen/Comp_NonDSO_2.cpp
-
-gen/Comp_NonDSO_3.o: gen/Comp_NonDSO_3.cpp
-	$(CXX)  $(CXXFLAGS_EXT)  $(CPPFLAGS_EXT) -DSG_TARGET_SYSTEMC  -fvisibility=hidden -MMD -c -o gen/Comp_NonDSO_3.o  gen/Comp_NonDSO_3.cpp
-
-gen/Comp_NonDSO_4.o: gen/Comp_NonDSO_4.cpp
-	$(CXX)  $(CXXFLAGS_EXT)  $(CPPFLAGS_EXT) -DSG_TARGET_SYSTEMC  -fvisibility=hidden -MMD -c -o gen/Comp_NonDSO_4.o  gen/Comp_NonDSO_4.cpp
-
-gen/Comp_NonDSO_5.o: gen/Comp_NonDSO_5.cpp
-	$(CXX)  $(CXXFLAGS_EXT)  $(CPPFLAGS_EXT) -DSG_TARGET_SYSTEMC  -fvisibility=hidden -MMD -c -o gen/Comp_NonDSO_5.o  gen/Comp_NonDSO_5.cpp
 
 gen/CADI_Ctors_NonDSO.o: gen/CADI_Ctors_NonDSO.cpp
 	$(CXX)  $(CXXFLAGS_EXT)  $(CPPFLAGS_EXT) -DSG_TARGET_SYSTEMC  -fvisibility=hidden  -O0 -MMD -c -o gen/CADI_Ctors_NonDSO.o  gen/CADI_Ctors_NonDSO.cpp
