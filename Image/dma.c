@@ -100,7 +100,7 @@ __irq void irq_handler(void) {
 /*
  * Testbench process.
  */
-static void run(void) {
+static void run1(void) {
     uint32_t value = 0;
 
     /*
@@ -144,6 +144,56 @@ static void run(void) {
     printf("dma.c: run(): end of DMA transfer\n");
 }
 
+
+static void run2(void) {
+    uint32_t value = 0;
+
+    /*
+     * Programs DMA transfer...
+     */
+    printf("[  CPU  ] dma.c: run(): programs DMA transfer...\n");
+
+    /* Write DMA source address register */
+    value = 0x20;
+//  Switch src dest
+//    (* SRC_ADDR) = value;
+    (* DST_ADDR) = value;
+
+    /* Write DMA destination address register */
+    value = 0x34002000;
+//  Switch src dest
+//    (* DST_ADDR) = value;
+    (* SRC_ADDR) = value;
+
+    /* Write DMA length register */
+    value = 1024 /* bytes */;
+    (* LENGTH) = value;
+
+    /*
+     * Starts DMA transfer...
+     */
+    printf("dma.c: run(): starts DMA transfer...\n");
+
+    /* Start the DMA transfer (control register witdh is 8 bits, the write value
+     * must be aligned before write) */
+    end_transfer = 0;
+    (* CONTROL) = START;
+
+    /* Verification: read DMA control register (8 bits value) */
+    value = (* CONTROL);
+
+    /*
+     * Waiting for end of DMA transfer
+     */
+    while (1) {
+        if (end_transfer) {
+            break;
+        }
+    }
+    printf("dma.c: run(): end of DMA transfer\n");
+}
+
+
 /*
  * User's entry point.
  */
@@ -167,7 +217,12 @@ int main(void) {
     end_transfer = 0;
 
     /* Single transfer */
-    run();
+    printf("[  CPU  ] run-1: main()\n");
+    run1();
+
+    /* Single transfer */
+    printf("[  CPU  ] run-2: main()\n");
+    run2();
 
 #if defined(USE_WFI)
     /* Wait for interrupts */
