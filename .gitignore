@@ -1,0 +1,13 @@
+Build_AEMv8M/*
+Build_Cortex-M0/*
+Build_Cortex-M0Plus/*
+Build_Cortex-M23/*
+Build_Cortex-M33/*
+Build_Cortex-M35P/*
+Build_Cortex-M4/*
+Build_Cortex-M55/*
+Build_Cortex-R5x1/*
+Build_SecurCore-SC000/*
+Build_SecurCore-SC300/*
+LISA/*
+
