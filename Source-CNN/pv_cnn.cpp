@@ -18,6 +18,11 @@ const addr_t pv_cnn::SRC_ADDR = 0x00;  /* First register */
 const addr_t pv_cnn::DST_ADDR = SRC_ADDR + sizeof(data_t);
 const addr_t pv_cnn::LENGTH   = DST_ADDR + sizeof(data_t);
 const addr_t pv_cnn::CONTROL  = LENGTH + sizeof(data_t);
+const addr_t pv_cnn::MONITOR1 = CONTROL + sizeof(data_t);
+const addr_t pv_cnn::MONITOR2 = MONITOR1 + sizeof(data_t);
+const addr_t pv_cnn::MONITOR3 = MONITOR2 + sizeof(data_t);
+const addr_t pv_cnn::MONITOR4 = MONITOR3 + sizeof(data_t);
+
 
 /*
  * Control register bit
@@ -40,7 +45,11 @@ pv_cnn::pv_cnn(sc_core::sc_module_name module_name):
     m_pv_cnn_src_addr(0),
     m_pv_cnn_dst_addr(0),
     m_pv_cnn_length(0),
-    m_pv_cnn_control(0) {
+    m_pv_cnn_control(0),
+    m_pv_cnn_monitor1(0),
+    m_pv_cnn_monitor2(0),
+    m_pv_cnn_monitor3(0),
+    m_pv_cnn_monitor4(0) {
     amba_pv_s(* this);
     amba_pv_m(* this);
     SC_METHOD(transfer);
@@ -63,6 +72,7 @@ pv_cnn::read(int id,
              unsigned int size,
              const amba_pv::amba_pv_control * ctrl,
              sc_core::sc_time & t) {
+
     switch (address) {      
         case SRC_ADDR:
 
@@ -119,6 +129,67 @@ pv_cnn::read(int id,
             std::cout << ": read pv_cnn control register, returns ";
             std::cout << (int) m_pv_cnn_control << std::endl;
             break;
+
+        case MONITOR1: 
+
+            /* Read pv_cnn control register. This register is 8 bits */ /* cycle count */
+            if (size != 4) {
+                SC_REPORT_WARNING(name(),
+                                  "invalid read access on monitor1 register");
+                return (amba_pv::AMBA_PV_SLVERR);
+            }
+            (* data) = m_pv_cnn_monitor1;
+            std::cout << "[  SC DBG Mon1 ]\t" << name() << std::showbase << std::hex;
+            std::cout << ": read pv_cnn monitor1 register, returns ";
+            std::cout << (int) m_pv_cnn_monitor1 << std::endl;
+            std::cout << "\t\t Time: " << t << std::endl;
+            break;
+
+        case MONITOR2: 
+
+            /* Read pv_cnn control register. This register is 8 bits */  /* memory read count */
+            if (size != 4) {
+                SC_REPORT_WARNING(name(),
+                                  "invalid read access on monitor2 register");
+                return (amba_pv::AMBA_PV_SLVERR);
+            }
+            (* data) = m_pv_cnn_monitor2;
+            std::cout << "[  SC DBG Mon2 ]\t" << name() << std::showbase << std::hex;
+            std::cout << ": read pv_cnn monitor2 register, returns ";
+            std::cout << (int) m_pv_cnn_monitor2 << std::endl;
+            std::cout << "\t\t Time: " << t << std::endl;
+            break;
+
+        case MONITOR3: 
+
+            /* Read pv_cnn control register. This register is 8 bits */  /* memory write count */
+            if (size != 4) {
+                SC_REPORT_WARNING(name(),
+                                  "invalid read access on monitor3 register");
+                return (amba_pv::AMBA_PV_SLVERR);
+            }
+            (* data) = m_pv_cnn_monitor3;
+            std::cout << "[  SC DBG Mon3 ]\t" << name() << std::showbase << std::hex;
+            std::cout << ": read pv_cnn monitor3 register, returns ";
+            std::cout << (int) m_pv_cnn_monitor3 << std::endl;
+            std::cout << "\t\t Time: " << t << std::endl;
+            break;
+
+        case MONITOR4: 
+
+            /* Read pv_cnn control register. This register is 8 bits */  /* other count */
+            if (size != 4) {
+                SC_REPORT_WARNING(name(),
+                                  "invalid read access on monitor4 register");
+                return (amba_pv::AMBA_PV_SLVERR);
+            }
+            (* data) = m_pv_cnn_monitor4;
+            std::cout << "[  SC DBG Mon4 ]\t" << name() << std::showbase << std::hex;
+            std::cout << ": read pv_cnn monitor4 register, returns ";
+            std::cout << (int) m_pv_cnn_monitor4 << std::endl;
+            std::cout << "\t\t Time: " << t << std::endl;
+            break;
+
         default:       
             SCX_REPORT_WARNING(name(),
                                "cnn has received a read request with input "
@@ -203,6 +274,63 @@ pv_cnn::write(int id,
                 m_irq_to_change.notify(t);
             }
             break;
+
+        case MONITOR1:
+            /* Write pv_cnn length register. This register is 32 bits */
+            if (size != 4) {
+                SC_REPORT_WARNING(name(),
+                                  "invalid write access on monitor1 register");
+                return (amba_pv::AMBA_PV_SLVERR);
+            }
+            m_pv_cnn_monitor1 = (* reinterpret_cast<unsigned int *>(data));
+            std::cout << "[  SC DBG Mon1 ]\t" << name() << std::showbase << std::hex;
+            std::cout << ": write " << m_pv_cnn_monitor1;
+            std::cout << " in pv_cnn monitor1 register\n";
+            std::cout << "\t\t Time: " << t << std::endl;
+            break;  
+
+        case MONITOR2:
+            /* Write pv_cnn length register. This register is 32 bits */
+            if (size != 4) {
+                SC_REPORT_WARNING(name(),
+                                  "invalid write access on monitor2 register");
+                return (amba_pv::AMBA_PV_SLVERR);
+            }
+            m_pv_cnn_monitor2 = (* reinterpret_cast<unsigned int *>(data));
+            std::cout << "[  SC DBG Mon2 ]\t" << name() << std::showbase << std::hex;
+            std::cout << ": write " << m_pv_cnn_monitor2;
+            std::cout << " in pv_cnn monitor2 register\n";
+            std::cout << "\t\t Time: " << t << std::endl;
+            break;  
+
+        case MONITOR3:
+            /* Write pv_cnn length register. This register is 32 bits */
+            if (size != 4) {
+                SC_REPORT_WARNING(name(),
+                                  "invalid write access on monitor3 register");
+                return (amba_pv::AMBA_PV_SLVERR);
+            }
+            m_pv_cnn_monitor3 = (* reinterpret_cast<unsigned int *>(data));
+            std::cout << "[  SC DBG Mon3 ]\t" << name() << std::showbase << std::hex;
+            std::cout << ": write " << m_pv_cnn_monitor3;
+            std::cout << " in pv_cnn monitor3 register\n";
+            std::cout << "\t\t Time: " << t << std::endl;
+            break;  
+
+        case MONITOR4:
+            /* Write pv_cnn length register. This register is 32 bits */
+            if (size != 4) {
+                SC_REPORT_WARNING(name(),
+                                  "invalid write access on monitor4 register");
+                return (amba_pv::AMBA_PV_SLVERR);
+            }
+            m_pv_cnn_monitor4 = (* reinterpret_cast<unsigned int *>(data));
+            std::cout << "[  SC DBG Mon4 ]\t" << name() << std::showbase << std::hex;
+            std::cout << ": write " << m_pv_cnn_monitor4;
+            std::cout << " in pv_cnn monitor4 register\n";
+            std::cout << "\t\t Time: " << t;
+            break;  
+
         default: 
             SCX_REPORT_WARNING(name(),
                                "CNN has received a write request with input "
@@ -309,6 +437,7 @@ pv_cnn::debug_write(int socket_id,
                 m_pv_cnn_control &= ~IRQ;
             }
             break;
+            
         default: 
             return 0;
     }

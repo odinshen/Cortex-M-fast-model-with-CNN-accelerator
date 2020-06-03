@@ -28,6 +28,13 @@ static volatile uint32_t * SRC_ADDR = DMA_BASE_ADDRESS + 0;
 static volatile uint32_t * DST_ADDR = DMA_BASE_ADDRESS + 2;
 static volatile uint32_t * LENGTH = DMA_BASE_ADDRESS + 4;
 static volatile uint8_t * CONTROL = (uint8_t *) (DMA_BASE_ADDRESS + 6);
+
+static volatile uint32_t * MON1_ADDR = DMA_BASE_ADDRESS + 8;
+static volatile uint32_t * MON2_ADDR = DMA_BASE_ADDRESS + 10;
+static volatile uint32_t * MON3_ADDR = DMA_BASE_ADDRESS + 12;
+static volatile uint32_t * MON4_ADDR = DMA_BASE_ADDRESS + 14;
+
+
 static const uint8_t START = 0x01;
 static const uint8_t IRQ = 0x10;
 static volatile int end_transfer = 0;
@@ -119,6 +126,29 @@ static void run1(void) {
     /* Write DMA length register */
     value = 1024 /* bytes */;
     (* LENGTH) = value;
+
+    value = 0x11;
+    (* MON1_ADDR) = value;
+
+    value = 0x22;
+    (* MON2_ADDR) = value;
+
+    value = 0x33;
+    (* MON3_ADDR) = value;
+
+     value = 0x44;
+    (* MON4_ADDR) = value;
+
+
+    if ( (* MON1_ADDR) == 0x11 )
+        printf("dma.c: run(): OK 1\n");
+    if ( (* MON2_ADDR) == 0x22 )
+        printf("dma.c: run(): OK 2\n");
+    if ( (* MON3_ADDR) == 0x33 )
+        printf("dma.c: run(): OK 3\n");
+    if ( (* MON4_ADDR) == 0x44 )
+        printf("dma.c: run(): OK 4\n");
+
 
     /*
      * Starts DMA transfer...
