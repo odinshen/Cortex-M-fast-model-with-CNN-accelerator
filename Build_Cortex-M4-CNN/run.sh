@@ -6,4 +6,4 @@
 # All rights reserved.
 #
 
-./EVS_Cortex-M4-CNN.x -a CNN.Core=../Image/dma_v7m.axf $*
+./EVS_Cortex-M4-CNN.x -a CNN.Core=../Image/cnn_v7m.axf $*

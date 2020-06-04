@@ -1,5 +1,5 @@
 /*
- * dma.c - DMA example's application.
+ * cnn.c - CNN example's application.
  *
  * Copyright 2007, 2011-2012 ARM Limited.
  * All rights reserved.
@@ -89,11 +89,11 @@ __irq void irq_handler(void) {
         uint8_t value = 0;
 
         /* Transfer done */
-        printf("[  CPU  ] dma.c: irq_handler(): end of DMA transfer received\n");
+        printf("[  CPU  ] cnn.c: irq_handler(): end of DMA transfer received\n");
         end_transfer = 1;
 
         /* Clears DMA interrupt */
-        printf("[  CPU  ] dma.c: irq_handler(): clears DMA interrupt...\n");
+        printf("[  CPU  ] cnn.c: irq_handler(): clears DMA interrupt...\n");
 
         /* Read DMA control register */
         value = (* CONTROL);
@@ -104,28 +104,10 @@ __irq void irq_handler(void) {
     }
 }
 
-/*
- * Testbench process.
- */
-static void run1(void) {
+
+static void mon_read(void) {
+
     uint32_t value = 0;
-
-    /*
-     * Programs DMA transfer...
-     */
-    printf("[  CPU  ] dma.c: run(): programs DMA transfer...\n");
-
-    /* Write DMA source address register */
-    value = 0x20;
-    (* SRC_ADDR) = value;
-
-    /* Write DMA destination address register */
-    value = 0x34002000;
-    (* DST_ADDR) = value;
-
-    /* Write DMA length register */
-    value = 1024 /* bytes */;
-    (* LENGTH) = value;
 
     value = 0x11;
     (* MON1_ADDR) = value;
@@ -139,21 +121,47 @@ static void run1(void) {
      value = 0x44;
     (* MON4_ADDR) = value;
 
+}
 
+/*
+ * Testbench process.
+ */
+static void run1(void) {
+    uint32_t value = 0;
+
+    /*
+     * Programs DMA transfer...
+     */
+    printf("[  CPU  ] cnn.c: run(): programs DMA transfer...\n");
+
+    /* Write DMA source address register */
+    value = 0x20;
+    (* SRC_ADDR) = value;
+
+    /* Write DMA destination address register */
+    value = 0x34002000;
+    (* DST_ADDR) = value;
+
+    /* Write DMA length register */
+    value = 1024 /* bytes */;
+    (* LENGTH) = value;
+
+    mon_read();
+/*
     if ( (* MON1_ADDR) == 0x11 )
-        printf("dma.c: run(): OK 1\n");
+        printf("cnn.c: run(): OK 1\n");
     if ( (* MON2_ADDR) == 0x22 )
-        printf("dma.c: run(): OK 2\n");
+        printf("cnn.c: run(): OK 2\n");
     if ( (* MON3_ADDR) == 0x33 )
-        printf("dma.c: run(): OK 3\n");
+        printf("cnn.c: run(): OK 3\n");
     if ( (* MON4_ADDR) == 0x44 )
-        printf("dma.c: run(): OK 4\n");
-
+        printf("cnn.c: run(): OK 4\n");
+*/
 
     /*
      * Starts DMA transfer...
      */
-    printf("dma.c: run(): starts DMA transfer...\n");
+    printf("cnn.c: run(): starts DMA transfer...\n");
 
     /* Start the DMA transfer (control register witdh is 8 bits, the write value
      * must be aligned before write) */
@@ -171,7 +179,21 @@ static void run1(void) {
             break;
         }
     }
-    printf("dma.c: run(): end of DMA transfer\n");
+    printf("cnn.c: run(): end of DMA transfer\n");
+
+    mon_read();
+
+/*
+    if ( (* MON1_ADDR) == 0x11 )
+        printf("cnn.c: run(): OK 1\n");
+    if ( (* MON2_ADDR) == 0x22 )
+        printf("cnn.c: run(): OK 2\n");
+    if ( (* MON3_ADDR) == 0x33 )
+        printf("cnn.c: run(): OK 3\n");
+    if ( (* MON4_ADDR) == 0x44 )
+        printf("cnn.c: run(): OK 4\n");
+*/
+
 }
 
 
@@ -181,7 +203,7 @@ static void run2(void) {
     /*
      * Programs DMA transfer...
      */
-    printf("[  CPU  ] dma.c: run(): programs DMA transfer...\n");
+    printf("[  CPU  ] cnn.c: run(): programs DMA transfer...\n");
 
     /* Write DMA source address register */
     value = 0x20;
@@ -199,10 +221,24 @@ static void run2(void) {
     value = 1024 /* bytes */;
     (* LENGTH) = value;
 
+
+    mon_read();
+
+/*
+    if ( (* MON1_ADDR) == 0x11 )
+        printf("cnn.c: run(): OK 1\n");
+    if ( (* MON2_ADDR) == 0x22 )
+        printf("cnn.c: run(): OK 2\n");
+    if ( (* MON3_ADDR) == 0x33 )
+        printf("cnn.c: run(): OK 3\n");
+    if ( (* MON4_ADDR) == 0x44 )
+        printf("cnn.c: run(): OK 4\n");
+*/
+
     /*
      * Starts DMA transfer...
      */
-    printf("dma.c: run(): starts DMA transfer...\n");
+    printf("cnn.c: run(): starts DMA transfer...\n");
 
     /* Start the DMA transfer (control register witdh is 8 bits, the write value
      * must be aligned before write) */
@@ -220,7 +256,20 @@ static void run2(void) {
             break;
         }
     }
-    printf("dma.c: run(): end of DMA transfer\n");
+    printf("cnn.c: run(): end of DMA transfer\n");
+
+    mon_read();
+
+/*
+    if ( (* MON1_ADDR) == 0x11 )
+        printf("cnn.c: run(): OK 1\n");
+    if ( (* MON2_ADDR) == 0x22 )
+        printf("cnn.c: run(): OK 2\n");
+    if ( (* MON3_ADDR) == 0x33 )
+        printf("cnn.c: run(): OK 3\n");
+    if ( (* MON4_ADDR) == 0x44 )
+        printf("cnn.c: run(): OK 4\n");
+*/
 }
 
 
@@ -229,8 +278,23 @@ static void run2(void) {
  */
 int main(void) {
 
+    uint32_t value = 0;
+
     /* Initialisations  */
-    printf("[  CPU  ] dma.c: main()\n");
+    printf("[  CPU  ] cnn.c: main()\n");
+
+    mon_read();
+
+/*
+    if ( (* MON1_ADDR) == 0x11 )
+        printf("cnn.c: run(): OK 1\n");
+    if ( (* MON2_ADDR) == 0x22 )
+        printf("cnn.c: run(): OK 2\n");
+    if ( (* MON3_ADDR) == 0x33 )
+        printf("cnn.c: run(): OK 3\n");
+    if ( (* MON4_ADDR) == 0x44 )
+        printf("cnn.c: run(): OK 4\n");
+*/
 
     /* Installs IRQ handler */
 #if defined(___MCLASS___)

@@ -49,19 +49,19 @@ v6m/%.o: %.c
 wfi/%.o: %.c
 	$(CC) $(CFLAGS) $(WFICFLAGS) -c -o $@ $<
 
-all: dma.axf dma_v7m.axf dma_v6m.axf dma_wfi.axf
+all: cnn.axf cnn_v7m.axf cnn_v6m.axf cnn_wfi.axf
 
-dma.axf: v6 v6/dma.o
-	$(LD) $(LDFLAGS) $(V6LDFLAGS) -o $@ v6/dma.o
+cnn.axf: v6 v6/cnn.o
+	$(LD) $(LDFLAGS) $(V6LDFLAGS) -o $@ v6/cnn.o
 
-dma_v7m.axf: v7m v7m/dma.o
-	$(LD) $(LDFLAGS) $(V7MLDFLAGS) -o $@ v7m/dma.o
+cnn_v7m.axf: v7m v7m/cnn.o
+	$(LD) $(LDFLAGS) $(V7MLDFLAGS) -o $@ v7m/cnn.o
 
-dma_v6m.axf: v6m v6m/dma.o
-	$(LD) $(LDFLAGS) $(V6MLDFLAGS) -o $@ v6m/dma.o
+cnn_v6m.axf: v6m v6m/cnn.o
+	$(LD) $(LDFLAGS) $(V6MLDFLAGS) -o $@ v6m/cnn.o
 
-dma_wfi.axf: wfi wfi/dma.o
-	$(LD) $(LDFLAGS) $(WFILDFLAGS) -o $@ wfi/dma.o
+cnn_wfi.axf: wfi wfi/cnn.o
+	$(LD) $(LDFLAGS) $(WFILDFLAGS) -o $@ wfi/cnn.o
 
 clean:
 	-rm -f *.axf *.list *.map
