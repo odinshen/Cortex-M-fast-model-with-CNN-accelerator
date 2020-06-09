@@ -88,7 +88,6 @@ int sc_main(int argc , char * argv[]) {
 // For 2nd master
 //    router.bind(3, pv_cnn.amba_pv_s, 0x34008000, 0x3400cFFF);
 
-
     cnn.irq_out(master.pv_cnn_irq_in);
 
     /*

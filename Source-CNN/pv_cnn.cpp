@@ -73,6 +73,8 @@ pv_cnn::read(int id,
              const amba_pv::amba_pv_control * ctrl,
              sc_core::sc_time & t) {
 
+    unsigned long time_stamp = sc_core::sc_time_stamp().value();
+
     switch (address) {      
         case SRC_ADDR:
 
@@ -139,10 +141,10 @@ pv_cnn::read(int id,
                 return (amba_pv::AMBA_PV_SLVERR);
             }
             (* data) = m_pv_cnn_monitor1;
-            std::cout << "[  SC DBG Mon1 ]\t" << name() << std::showbase << std::hex;
+            std::cout << "[  SC DBG Mon1 ]\t" << std::showbase << std::hex;
             std::cout << ": read pv_cnn monitor1 register, returns ";
             std::cout << (int) m_pv_cnn_monitor1 << std::endl;
-            std::cout << "\t\t Time: " << t << std::endl;
+            std::cout << "\t\t Time: " << time_stamp << std::endl;
             break;
 
         case MONITOR2: 
@@ -154,10 +156,10 @@ pv_cnn::read(int id,
                 return (amba_pv::AMBA_PV_SLVERR);
             }
             (* data) = m_pv_cnn_monitor2;
-            std::cout << "[  SC DBG Mon2 ]\t" << name() << std::showbase << std::hex;
+            std::cout << "[  SC DBG Mon2 ]\t" << std::showbase << std::hex;
             std::cout << ": read pv_cnn monitor2 register, returns ";
             std::cout << (int) m_pv_cnn_monitor2 << std::endl;
-            std::cout << "\t\t Time: " << t << std::endl;
+
             break;
 
         case MONITOR3: 
@@ -169,10 +171,10 @@ pv_cnn::read(int id,
                 return (amba_pv::AMBA_PV_SLVERR);
             }
             (* data) = m_pv_cnn_monitor3;
-            std::cout << "[  SC DBG Mon3 ]\t" << name() << std::showbase << std::hex;
+            std::cout << "[  SC DBG Mon3 ]\t" << std::showbase << std::hex;
             std::cout << ": read pv_cnn monitor3 register, returns ";
             std::cout << (int) m_pv_cnn_monitor3 << std::endl;
-            std::cout << "\t\t Time: " << t << std::endl;
+
             break;
 
         case MONITOR4: 
@@ -184,10 +186,10 @@ pv_cnn::read(int id,
                 return (amba_pv::AMBA_PV_SLVERR);
             }
             (* data) = m_pv_cnn_monitor4;
-            std::cout << "[  SC DBG Mon4 ]\t" << name() << std::showbase << std::hex;
+            std::cout << "[  SC DBG Mon4 ]\t" << std::showbase << std::hex;
             std::cout << ": read pv_cnn monitor4 register, returns ";
             std::cout << (int) m_pv_cnn_monitor4 << std::endl;
-            std::cout << "\t\t Time: " << t << std::endl;
+
             break;
 
         default:       
@@ -210,6 +212,9 @@ pv_cnn::write(int id,
               const amba_pv::amba_pv_control * ctrl,
               unsigned char * strb, 
               sc_core::sc_time & t) {
+    
+    unsigned long time_stamp = sc_core::sc_time_stamp().value();
+
     switch (address) {
         case SRC_ADDR:
 
@@ -283,10 +288,10 @@ pv_cnn::write(int id,
                 return (amba_pv::AMBA_PV_SLVERR);
             }
             m_pv_cnn_monitor1 = (* reinterpret_cast<unsigned int *>(data));
-            std::cout << "[  SC DBG Mon1 ]\t" << name() << std::showbase << std::hex;
+            std::cout << "[  SC DBG Mon1 ]\t" << std::showbase << std::hex;
             std::cout << ": write " << m_pv_cnn_monitor1;
             std::cout << " in pv_cnn monitor1 register\n";
-            std::cout << "\t\t Time: " << t << std::endl;
+            std::cout << "\t\t Time: " << time_stamp << std::endl;
             break;  
 
         case MONITOR2:
@@ -297,10 +302,9 @@ pv_cnn::write(int id,
                 return (amba_pv::AMBA_PV_SLVERR);
             }
             m_pv_cnn_monitor2 = (* reinterpret_cast<unsigned int *>(data));
-            std::cout << "[  SC DBG Mon2 ]\t" << name() << std::showbase << std::hex;
+            std::cout << "[  SC DBG Mon2 ]\t" << std::showbase << std::hex;
             std::cout << ": write " << m_pv_cnn_monitor2;
             std::cout << " in pv_cnn monitor2 register\n";
-            std::cout << "\t\t Time: " << t << std::endl;
             break;  
 
         case MONITOR3:
@@ -311,10 +315,9 @@ pv_cnn::write(int id,
                 return (amba_pv::AMBA_PV_SLVERR);
             }
             m_pv_cnn_monitor3 = (* reinterpret_cast<unsigned int *>(data));
-            std::cout << "[  SC DBG Mon3 ]\t" << name() << std::showbase << std::hex;
+            std::cout << "[  SC DBG Mon3 ]\t" << std::showbase << std::hex;
             std::cout << ": write " << m_pv_cnn_monitor3;
             std::cout << " in pv_cnn monitor3 register\n";
-            std::cout << "\t\t Time: " << t << std::endl;
             break;  
 
         case MONITOR4:
@@ -325,10 +328,9 @@ pv_cnn::write(int id,
                 return (amba_pv::AMBA_PV_SLVERR);
             }
             m_pv_cnn_monitor4 = (* reinterpret_cast<unsigned int *>(data));
-            std::cout << "[  SC DBG Mon4 ]\t" << name() << std::showbase << std::hex;
+            std::cout << "[  SC DBG Mon4 ]\t" << std::showbase << std::hex;
             std::cout << ": write " << m_pv_cnn_monitor4;
             std::cout << " in pv_cnn monitor4 register\n";
-            std::cout << "\t\t Time: " << t;
             break;  
 
         default: 

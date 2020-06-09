@@ -64,8 +64,6 @@ static void install_handler(handler_t handler, uint32_t * vector) {
     (* (vector + (JUMP_TABLE_BASE / sizeof(uint32_t)))) =
         0xe59ff000 | (HANDLER_TABLE_OFFSET - 0x8);
 
-    /* store address of 'handler' at a small fixed offset from the 'vector'
-     * base */
     (* (vector + (HANDLER_TABLE_OFFSET / sizeof(uint32_t)))) =
         (uint32_t) handler;
 }
@@ -102,6 +100,13 @@ __irq void irq_handler(void) {
         value &= ~IRQ;      
         (* CONTROL) = value;
     }
+}
+
+static void sc_time_stamp(void) {
+    uint32_t value = 0;
+    value = 0x11;
+    (* MON1_ADDR) = value;
+    value = (* MON1_ADDR);
 }
 
 
@@ -147,17 +152,7 @@ static void run1(void) {
     (* LENGTH) = value;
 
     mon_read();
-/*
-    if ( (* MON1_ADDR) == 0x11 )
-        printf("cnn.c: run(): OK 1\n");
-    if ( (* MON2_ADDR) == 0x22 )
-        printf("cnn.c: run(): OK 2\n");
-    if ( (* MON3_ADDR) == 0x33 )
-        printf("cnn.c: run(): OK 3\n");
-    if ( (* MON4_ADDR) == 0x44 )
-        printf("cnn.c: run(): OK 4\n");
-*/
-
+    
     /*
      * Starts DMA transfer...
      */
@@ -207,41 +202,27 @@ static void run2(void) {
 
     /* Write DMA source address register */
     value = 0x20;
-//  Switch src dest
-//    (* SRC_ADDR) = value;
     (* DST_ADDR) = value;
 
     /* Write DMA destination address register */
     value = 0x34002000;
-//  Switch src dest
-//    (* DST_ADDR) = value;
     (* SRC_ADDR) = value;
 
     /* Write DMA length register */
     value = 1024 /* bytes */;
     (* LENGTH) = value;
 
-
     mon_read();
-
-/*
-    if ( (* MON1_ADDR) == 0x11 )
-        printf("cnn.c: run(): OK 1\n");
-    if ( (* MON2_ADDR) == 0x22 )
-        printf("cnn.c: run(): OK 2\n");
-    if ( (* MON3_ADDR) == 0x33 )
-        printf("cnn.c: run(): OK 3\n");
-    if ( (* MON4_ADDR) == 0x44 )
-        printf("cnn.c: run(): OK 4\n");
-*/
 
     /*
      * Starts DMA transfer...
      */
     printf("cnn.c: run(): starts DMA transfer...\n");
 
-    /* Start the DMA transfer (control register witdh is 8 bits, the write value
-     * must be aligned before write) */
+    /* 
+     * Start the DMA transfer (control register witdh is 8 bits, the write value
+     * must be aligned before write) 
+     */
     end_transfer = 0;
     (* CONTROL) = START;
 
@@ -260,17 +241,68 @@ static void run2(void) {
 
     mon_read();
 
-/*
-    if ( (* MON1_ADDR) == 0x11 )
-        printf("cnn.c: run(): OK 1\n");
-    if ( (* MON2_ADDR) == 0x22 )
-        printf("cnn.c: run(): OK 2\n");
-    if ( (* MON3_ADDR) == 0x33 )
-        printf("cnn.c: run(): OK 3\n");
-    if ( (* MON4_ADDR) == 0x44 )
-        printf("cnn.c: run(): OK 4\n");
-*/
 }
+
+
+/* CNN */
+
+static void convolution(
+    uint32_t *inputs,
+    uint32_t *outputs,
+    uint32_t *weights,
+    uint32_t *biases
+) {
+    uint32_t lay_input_columns  = 32;
+    uint32_t lay_input_row      = 32;
+    uint32_t lay_input_channel  = 3;
+    uint32_t lay_output_columns = 28;
+    uint32_t lay_output_row     = 28;
+    uint32_t lay_output_channel = 3;
+    uint32_t lay_relu_activation = 1;
+    uint32_t lay_filter_columns  = 3;
+    uint32_t lay_filter_row      = 3;
+
+
+    unsigned int stride_row;
+    unsigned int stride_col;
+    unsigned int filter_row;
+    unsigned int filter_col;
+    unsigned int out_ch;
+    unsigned int in_ch;
+
+    uint32_t current_weight;
+    uint32_t current_biase;
+    uint32_t current_input;
+    uint32_t current_result;
+    uint32_t kernel_result;
+
+    for (stride_row = 0; stride_row < lay_output_row; stride_row++) {
+        for (stride_col = 0; stride_col < lay_output_columns; stride_col++) {
+            for (filter_row = 0; filter_row < lay_filter_row; filter_row++) {
+                for (filter_col = 0; filter_col < lay_filter_columns; filter_col++) {
+                    for (in_ch = 0; in_ch < lay_input_channel; in_ch++) {
+                        current_input = ((float*)inputs)[  ((stride_row + filter_row) * lay_input_columns * lay_input_channel)
+                                                        + ((stride_col + filter_col)                      * lay_input_channel)
+                                                        + in_ch];
+                        for (out_ch = 0; out_ch < lay_output_channel; out_ch++) {
+                            current_weight = ((float*)biases)[out_ch];
+                            current_weight = ((float*)weights)[  (filter_row * lay_filter_columns * lay_input_channel * lay_output_channel)
+                                                               + (filter_col                       * lay_input_channel * lay_output_channel)
+                                                               + (in_ch                                                 * lay_output_channel)
+                                                               + out_ch];
+                            current_result = current_input * current_weight;
+                            ((float*)outputs)[  (stride_row * lay_output_columns * lay_output_channel)
+                                              + (stride_col                       * lay_output_channel)
+                                              + out_ch]
+                                        += current_result;
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
 
 
 /*
@@ -282,19 +314,6 @@ int main(void) {
 
     /* Initialisations  */
     printf("[  CPU  ] cnn.c: main()\n");
-
-    mon_read();
-
-/*
-    if ( (* MON1_ADDR) == 0x11 )
-        printf("cnn.c: run(): OK 1\n");
-    if ( (* MON2_ADDR) == 0x22 )
-        printf("cnn.c: run(): OK 2\n");
-    if ( (* MON3_ADDR) == 0x33 )
-        printf("cnn.c: run(): OK 3\n");
-    if ( (* MON4_ADDR) == 0x44 )
-        printf("cnn.c: run(): OK 4\n");
-*/
 
     /* Installs IRQ handler */
 #if defined(___MCLASS___)
@@ -310,6 +329,7 @@ int main(void) {
     /* Initialize globals */
     end_transfer = 0;
 
+#if 0
     /* Single transfer */
     printf("[  CPU  ] run-1: main()\n");
     run1();
@@ -317,11 +337,29 @@ int main(void) {
     /* Single transfer */
     printf("[  CPU  ] run-2: main()\n");
     run2();
+#endif 
+
+    /* Single transfer */
+    sc_time_stamp();
+    printf("\n\n[  CPU  ] convolution() Start\n\n");
+    sc_time_stamp();
+
+    convolution(
+        (uint32_t *) 0x1000, 
+        (uint32_t *) 0x2000, 
+        (uint32_t *) 0x3000, 
+        (uint32_t *) 0x4000
+    );
+
+    printf("\n\n[  CPU  ] convolution() End\n\n");
+    sc_time_stamp();
 
 #if defined(USE_WFI)
     /* Wait for interrupts */
     __wfi();
 #endif
+
+
     exit(EXIT_SUCCESS);
     return EXIT_SUCCESS;
 }
