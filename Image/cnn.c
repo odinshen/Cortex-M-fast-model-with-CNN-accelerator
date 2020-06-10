@@ -104,11 +104,17 @@ __irq void irq_handler(void) {
 
 static void sc_time_stamp(void) {
     uint32_t value = 0;
-    value = 0x11;
-    (* MON1_ADDR) = value;
+//    value = 0x11;
+//    (* MON1_ADDR) = value;
     value = (* MON1_ADDR);
 }
 
+static uint32_t cnn_time_read_reset(void) {
+    uint32_t value = 0;
+    value = (* MON2_ADDR);
+//    printf("[  CPU  ] cnn.c: cnn_stamp(): %x\n", (uint32_t) value);
+    return value;
+}
 
 static void mon_read(void) {
 
@@ -177,17 +183,6 @@ static void run1(void) {
     printf("cnn.c: run(): end of DMA transfer\n");
 
     mon_read();
-
-/*
-    if ( (* MON1_ADDR) == 0x11 )
-        printf("cnn.c: run(): OK 1\n");
-    if ( (* MON2_ADDR) == 0x22 )
-        printf("cnn.c: run(): OK 2\n");
-    if ( (* MON3_ADDR) == 0x33 )
-        printf("cnn.c: run(): OK 3\n");
-    if ( (* MON4_ADDR) == 0x44 )
-        printf("cnn.c: run(): OK 4\n");
-*/
 
 }
 
@@ -311,6 +306,7 @@ static void convolution(
 int main(void) {
 
     uint32_t value = 0;
+    uint32_t total_time;
 
     /* Initialisations  */
     printf("[  CPU  ] cnn.c: main()\n");
@@ -344,12 +340,16 @@ int main(void) {
     printf("\n\n[  CPU  ] convolution() Start\n\n");
     sc_time_stamp();
 
+    total_time = cnn_time_read_reset();
     convolution(
         (uint32_t *) 0x1000, 
         (uint32_t *) 0x2000, 
         (uint32_t *) 0x3000, 
         (uint32_t *) 0x4000
     );
+
+    total_time = cnn_time_read_reset();
+    printf("\n\n\t[  CPU  ] cnn.c: cnn stamp: %x\n", (uint32_t) total_time);
 
     printf("\n\n[  CPU  ] convolution() End\n\n");
     sc_time_stamp();

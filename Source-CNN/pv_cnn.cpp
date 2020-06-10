@@ -30,6 +30,8 @@ const addr_t pv_cnn::MONITOR4 = MONITOR3 + sizeof(data_t);
 const unsigned char pv_cnn::START = 0x01;
 const unsigned char pv_cnn::IRQ   = 0x10;
 
+unsigned long cnn_time_stamp = 0;
+
 /* Functions */
 
 /*
@@ -75,7 +77,7 @@ pv_cnn::read(int id,
 
     unsigned long time_stamp = sc_core::sc_time_stamp().value();
 
-    switch (address) {      
+    switch (address) {
         case SRC_ADDR:
 
             /* Read pv_cnn source address register. This register is 32 bits */
@@ -152,13 +154,18 @@ pv_cnn::read(int id,
             /* Read pv_cnn control register. This register is 8 bits */  /* memory read count */
             if (size != 4) {
                 SC_REPORT_WARNING(name(),
-                                  "invalid read access on monitor2 register");
-                return (amba_pv::AMBA_PV_SLVERR);
+                                  "invalid read access on monicnn_stamptor2 register");
+                return (amba_pv::AMBA_PV_SLVERR);            m_pv_cnn_src_addr = (* reinterpret_cast<unsigned int *>(data));
+
             }
-            (* data) = m_pv_cnn_monitor2;
-            std::cout << "[  SC DBG Mon2 ]\t" << std::showbase << std::hex;
+//            (* data) = m_pv_cnn_monitor2;
+            time_stamp = time_stamp - cnn_time_stamp;
+            (* reinterpret_cast<unsigned int *>(data)) = time_stamp;
+
+            std::cout << "[  SC DBG Mon2 ]\t" << std::showbase << " size: " << size << std::hex;
             std::cout << ": read pv_cnn monitor2 register, returns ";
-            std::cout << (int) m_pv_cnn_monitor2 << std::endl;
+            std::cout << (int) time_stamp << std::endl;
+            cnn_time_stamp = time_stamp;
 
             break;
 
