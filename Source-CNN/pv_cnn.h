@@ -21,15 +21,15 @@ class pv_cnn:
       
     /* Registers relative addresses */
     public:
-        static const addr_t SRC_ADDR;
-        static const addr_t DST_ADDR;
-        static const addr_t LENGTH;
+        static const addr_t IN_ADDR;
+        static const addr_t OUT_ADDR;
+        static const addr_t WEIGHT_ADDR;
+        static const addr_t BAISE_ADDR;
         static const addr_t CONTROL;
         static const addr_t MONITOR1;
         static const addr_t MONITOR2;
         static const addr_t MONITOR3;
         static const addr_t MONITOR4;
-
 
     /* Control register bits */
         static const unsigned char START;
@@ -84,7 +84,8 @@ class pv_cnn:
             /* Rise/clear interrupt signal related event */
         unsigned int m_pv_cnn_src_addr; /* Source address register */
         unsigned int m_pv_cnn_dst_addr; /* Destination address register */
-        unsigned int m_pv_cnn_length;   /* Length register (in byte) */
+        unsigned int m_pv_cnn_weight;   /* Weight register (in byte) */
+        unsigned int m_pv_cnn_baise;    /* Baise register (in byte) */
         unsigned char m_pv_cnn_control; /* Control register (8 bits register) */
         unsigned int m_pv_cnn_monitor1; /* Monitor register */
         unsigned int m_pv_cnn_monitor2; /* Monitor register */

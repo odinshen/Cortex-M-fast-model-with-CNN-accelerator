@@ -24,15 +24,16 @@ typedef void (* handler_t)(void);
 #define HANDLER_TABLE_OFFSET 0x40
 
 #define DMA_BASE_ADDRESS ((uint32_t *) 0x34004000)
-static volatile uint32_t * SRC_ADDR = DMA_BASE_ADDRESS + 0;
-static volatile uint32_t * DST_ADDR = DMA_BASE_ADDRESS + 2;
-static volatile uint32_t * LENGTH = DMA_BASE_ADDRESS + 4;
-static volatile uint8_t * CONTROL = (uint8_t *) (DMA_BASE_ADDRESS + 6);
+static volatile uint32_t * IN_ADDR = DMA_BASE_ADDRESS + 0;
+static volatile uint32_t * OUT_ADDR = DMA_BASE_ADDRESS + 2;
+static volatile uint32_t * WEIGHT_ADDR = DMA_BASE_ADDRESS + 4;
+static volatile uint32_t * BIASE_ADDR = DMA_BASE_ADDRESS + 6;
+static volatile uint8_t * CONTROL = (uint8_t *) (DMA_BASE_ADDRESS + 8);
 
-static volatile uint32_t * MON1_ADDR = DMA_BASE_ADDRESS + 8;
-static volatile uint32_t * MON2_ADDR = DMA_BASE_ADDRESS + 10;
-static volatile uint32_t * MON3_ADDR = DMA_BASE_ADDRESS + 12;
-static volatile uint32_t * MON4_ADDR = DMA_BASE_ADDRESS + 14;
+static volatile uint32_t * MON1_ADDR = DMA_BASE_ADDRESS + 10;
+static volatile uint32_t * MON2_ADDR = DMA_BASE_ADDRESS + 12;
+static volatile uint32_t * MON3_ADDR = DMA_BASE_ADDRESS + 14;
+static volatile uint32_t * MON4_ADDR = DMA_BASE_ADDRESS + 16;
 
 
 static const uint8_t START = 0x01;
@@ -61,11 +62,8 @@ static void install_handler(handler_t handler, uint32_t * vector) {
 
     /* Updates contents of 'vector' to contain
      * LDR pc, [pc, #offset] instruction */
-    (* (vector + (JUMP_TABLE_BASE / sizeof(uint32_t)))) =
-        0xe59ff000 | (HANDLER_TABLE_OFFSET - 0x8);
-
-    (* (vector + (HANDLER_TABLE_OFFSET / sizeof(uint32_t)))) =
-        (uint32_t) handler;
+    (* (vector + (JUMP_TABLE_BASE / sizeof(uint32_t)))) = 0xe59ff000 | (HANDLER_TABLE_OFFSET - 0x8);
+    (* (vector + (HANDLER_TABLE_OFFSET / sizeof(uint32_t)))) = (uint32_t) handler;
 }
 
 /*
@@ -87,11 +85,11 @@ __irq void irq_handler(void) {
         uint8_t value = 0;
 
         /* Transfer done */
-        printf("[  CPU  ] cnn.c: irq_handler(): end of DMA transfer received\n");
+        printf("[  CPU  ] cnn.c: irq_handler(): end of CNN transfer received\n");
         end_transfer = 1;
 
         /* Clears DMA interrupt */
-        printf("[  CPU  ] cnn.c: irq_handler(): clears DMA interrupt...\n");
+        printf("[  CPU  ] cnn.c: irq_handler(): clears CNN interrupt...\n");
 
         /* Read DMA control register */
         value = (* CONTROL);
@@ -147,15 +145,15 @@ static void run1(void) {
 
     /* Write DMA source address register */
     value = 0x20;
-    (* SRC_ADDR) = value;
+    (* IN_ADDR) = value;
 
     /* Write DMA destination address register */
     value = 0x34002000;
-    (* DST_ADDR) = value;
+    (* OUT_ADDR) = value;
 
     /* Write DMA length register */
     value = 1024 /* bytes */;
-    (* LENGTH) = value;
+    (* WEIGHT_ADDR) = value;
 
     mon_read();
     
@@ -197,15 +195,15 @@ static void run2(void) {
 
     /* Write DMA source address register */
     value = 0x20;
-    (* DST_ADDR) = value;
+    (* OUT_ADDR) = value;
 
     /* Write DMA destination address register */
     value = 0x34002000;
-    (* SRC_ADDR) = value;
+    (* IN_ADDR) = value;
 
     /* Write DMA length register */
     value = 1024 /* bytes */;
-    (* LENGTH) = value;
+    (* WEIGHT_ADDR) = value;
 
     mon_read();
 
@@ -218,6 +216,66 @@ static void run2(void) {
      * Start the DMA transfer (control register witdh is 8 bits, the write value
      * must be aligned before write) 
      */
+    end_transfer = 0;
+    (* CONTROL) = START;
+
+    /* Verification: read DMA control register (8 bits value) */
+    value = (* CONTROL);
+
+    /*
+     * Waiting for end of DMA transfer
+     */
+    while (1) {
+        if (end_transfer) {
+            break;
+        }
+    }
+    printf("cnn.c: run(): end of DMA transfer\n");
+
+    mon_read();
+
+}
+
+
+static void cnn_acc(
+    uint32_t input_addr,
+    uint32_t output_addr,
+    uint32_t weight_addr,
+    uint32_t biase__addr
+) {
+
+    uint32_t value = 0;
+
+    /*
+     * Programs DMA transfer...
+     */
+    printf("[  CPU  ] cnn.c: run(): configure CNN transfer...\n");
+
+    /* Write CNN input address register */
+    value = input_addr;
+    (* IN_ADDR) = value;
+
+    /* Write CNN output address register */
+    value = output_addr;
+    (* OUT_ADDR) = value;
+
+    /* Write WEIGHT address register */
+    value = weight_addr /* bytes */;
+    (* WEIGHT_ADDR) = value;
+
+    /* Write BIASE address register */
+    value = biase__addr /* bytes */;
+    (* BIASE_ADDR) = value;
+
+    mon_read();
+    
+    /*
+     * Starts DMA transfer...
+     */
+    printf("cnn.c: run(): starts CNN transfer...\n");
+
+    /* Start the DMA transfer (control register witdh is 8 bits, the write value
+     * must be aligned before write) */
     end_transfer = 0;
     (* CONTROL) = START;
 
@@ -340,16 +398,22 @@ int main(void) {
     printf("\n\n[  CPU  ] convolution() Start\n\n");
     sc_time_stamp();
 
+#if 1
     total_time = cnn_time_read_reset();
+    cnn_acc(0x1000, 0x34002000, 0x3000, 0x4000);
+    printf("\n\n\t[  CPU  ] cnn.c: CNN_ACC stamp: %x\n", (uint32_t) total_time);
+#else
+    total_time = cnn_time_read_reset();
+    // software convolution 
     convolution(
         (uint32_t *) 0x1000, 
         (uint32_t *) 0x2000, 
         (uint32_t *) 0x3000, 
         (uint32_t *) 0x4000
     );
-
     total_time = cnn_time_read_reset();
     printf("\n\n\t[  CPU  ] cnn.c: cnn stamp: %x\n", (uint32_t) total_time);
+#endif
 
     printf("\n\n[  CPU  ] convolution() End\n\n");
     sc_time_stamp();

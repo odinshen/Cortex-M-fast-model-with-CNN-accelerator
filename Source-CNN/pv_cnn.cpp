@@ -14,14 +14,15 @@
 /*
  * Register relative addresses
  */
-const addr_t pv_cnn::SRC_ADDR = 0x00;  /* First register */
-const addr_t pv_cnn::DST_ADDR = SRC_ADDR + sizeof(data_t);
-const addr_t pv_cnn::LENGTH   = DST_ADDR + sizeof(data_t);
-const addr_t pv_cnn::CONTROL  = LENGTH + sizeof(data_t);
-const addr_t pv_cnn::MONITOR1 = CONTROL + sizeof(data_t);
-const addr_t pv_cnn::MONITOR2 = MONITOR1 + sizeof(data_t);
-const addr_t pv_cnn::MONITOR3 = MONITOR2 + sizeof(data_t);
-const addr_t pv_cnn::MONITOR4 = MONITOR3 + sizeof(data_t);
+const addr_t pv_cnn::IN_ADDR    = 0x00;  /* First register */
+const addr_t pv_cnn::OUT_ADDR   = IN_ADDR + sizeof(data_t);
+const addr_t pv_cnn::WEIGHT_ADDR= OUT_ADDR + sizeof(data_t);
+const addr_t pv_cnn::BAISE_ADDR = WEIGHT_ADDR + sizeof(data_t);
+const addr_t pv_cnn::CONTROL    = BAISE_ADDR + sizeof(data_t);
+const addr_t pv_cnn::MONITOR1   = CONTROL + sizeof(data_t);
+const addr_t pv_cnn::MONITOR2   = MONITOR1 + sizeof(data_t);
+const addr_t pv_cnn::MONITOR3   = MONITOR2 + sizeof(data_t);
+const addr_t pv_cnn::MONITOR4   = MONITOR3 + sizeof(data_t);
 
 
 /*
@@ -46,7 +47,8 @@ pv_cnn::pv_cnn(sc_core::sc_module_name module_name):
     pv_cnn_irq_out("pv_cnn_irq_out"),
     m_pv_cnn_src_addr(0),
     m_pv_cnn_dst_addr(0),
-    m_pv_cnn_length(0),
+    m_pv_cnn_weight(0),
+    m_pv_cnn_baise(0),
     m_pv_cnn_control(0),
     m_pv_cnn_monitor1(0),
     m_pv_cnn_monitor2(0),
@@ -78,7 +80,7 @@ pv_cnn::read(int id,
     unsigned long time_stamp = sc_core::sc_time_stamp().value();
 
     switch (address) {
-        case SRC_ADDR:
+        case IN_ADDR:
 
             /* Read pv_cnn source address register. This register is 32 bits */
             if (size != 4) {
@@ -92,7 +94,7 @@ pv_cnn::read(int id,
             std::cout << ": read pv_cnn source address register, returns ";
             std::cout << m_pv_cnn_src_addr << std::endl;
             break;
-        case DST_ADDR:
+        case OUT_ADDR:
 
             /* Read pv_cnn destination address register.
              * This register is 32 bits */
@@ -107,7 +109,7 @@ pv_cnn::read(int id,
             std::cout << ": read pv_cnn destination address register, returns ";
             std::cout << m_pv_cnn_dst_addr << std::endl;
             break;  
-        case LENGTH:
+        case WEIGHT_ADDR:
 
             /* Read pv_cnn length register. This register is 32 bits */
             if (size != 4) {
@@ -115,11 +117,25 @@ pv_cnn::read(int id,
                                   "invalid read access on length register");
                 return (amba_pv::AMBA_PV_SLVERR);
             }
-            (* reinterpret_cast<unsigned int *>(data)) = m_pv_cnn_length;
+            (* reinterpret_cast<unsigned int *>(data)) = m_pv_cnn_weight;
             std::cout << "[  SC DBG  ]\t" << name() << std::showbase << std::hex;
             std::cout << ": read pv_cnn length register, returns ";
-            std::cout << m_pv_cnn_length << std::endl;
+            std::cout << m_pv_cnn_weight << std::endl;
             break;  
+
+        case BAISE_ADDR:
+            /* Read pv_cnn baise register. This register is 32 bits */
+            if (size != 4) {
+                SC_REPORT_WARNING(name(),
+                                  "invalid read access on length register");
+                return (amba_pv::AMBA_PV_SLVERR);
+            }
+            (* reinterpret_cast<unsigned int *>(data)) = m_pv_cnn_baise;
+            std::cout << "[  SC DBG  ]\t" << name() << std::showbase << std::hex;
+            std::cout << ": read pv_cnn BAISE_ADDR register, returns ";
+            std::cout << m_pv_cnn_baise << std::endl;
+            break;  
+
         case CONTROL: 
 
             /* Read pv_cnn control register. This register is 8 bits */
@@ -169,7 +185,7 @@ pv_cnn::read(int id,
 
             break;
 
-        case MONITOR3: 
+        case MONITOR3: // As CNN dataport, add SC time delay
 
             /* Read pv_cnn control register. This register is 8 bits */  /* memory write count */
             if (size != 4) {
@@ -181,7 +197,6 @@ pv_cnn::read(int id,
             std::cout << "[  SC DBG Mon3 ]\t" << std::showbase << std::hex;
             std::cout << ": read pv_cnn monitor3 register, returns ";
             std::cout << (int) m_pv_cnn_monitor3 << std::endl;
-
             break;
 
         case MONITOR4: 
@@ -223,7 +238,7 @@ pv_cnn::write(int id,
     unsigned long time_stamp = sc_core::sc_time_stamp().value();
 
     switch (address) {
-        case SRC_ADDR:
+        case IN_ADDR:
 
             /* Write pv_cnn source address register. This register is 32 bits */
             if (size != 4) {
@@ -237,7 +252,7 @@ pv_cnn::write(int id,
             std::cout << ": write " << m_pv_cnn_src_addr;
             std::cout << " in pv_cnn source address register\n";
             break;
-        case DST_ADDR:
+        case OUT_ADDR:
 
             /* Write pv_cnn destination address register.
              * This register is 32 bits */
@@ -252,19 +267,33 @@ pv_cnn::write(int id,
             std::cout << ": write " << m_pv_cnn_dst_addr;
             std::cout << " in pv_cnn destination address register\n";
             break;
-        case LENGTH:
+        case WEIGHT_ADDR:
 
-            /* Write pv_cnn length register. This register is 32 bits */
+            /* Write pv_cnn weight register. This register is 32 bits */
             if (size != 4) {
                 SC_REPORT_WARNING(name(),
-                                  "invalid write access on length register");
+                                  "invalid write access on weight register");
                 return (amba_pv::AMBA_PV_SLVERR);
             }
-            m_pv_cnn_length = (* reinterpret_cast<unsigned int *>(data));
+            m_pv_cnn_weight = (* reinterpret_cast<unsigned int *>(data));
             std::cout << "[  SC DBG  ]\t" << name() << std::showbase << std::hex;
-            std::cout << ": write " << m_pv_cnn_length;
-            std::cout << " in pv_cnn length register\n";
+            std::cout << ": write " << m_pv_cnn_weight;
+            std::cout << " in pv_cnn weight register\n";
             break;  
+
+        case BAISE_ADDR:
+            /* Write pv_cnn Baise register. This register is 32 bits */
+            if (size != 4) {
+                SC_REPORT_WARNING(name(),
+                                  "invalid write access on baise register");
+                return (amba_pv::AMBA_PV_SLVERR);
+            }
+            m_pv_cnn_baise = (* reinterpret_cast<unsigned int *>(data));
+            std::cout << "[  SC DBG  ]\t" << name() << std::showbase << std::hex;
+            std::cout << ": write " << m_pv_cnn_baise;
+            std::cout << " in pv_cnn baise register\n";
+            break;  
+
         case CONTROL: 
 
             /* Write pv_cnn control register. This register is 8 bits */
@@ -359,7 +388,7 @@ pv_cnn::debug_read(int socket_id,
                    unsigned int length,
                    const amba_pv::amba_pv_control * ctrl) {
     switch (addr) {      
-        case SRC_ADDR:
+        case IN_ADDR:
 
             /* Read pv_cnn source address register. This register is 32 bits */
             if (length != 4) {
@@ -367,7 +396,7 @@ pv_cnn::debug_read(int socket_id,
             }
             (* reinterpret_cast<unsigned int *>(data)) = m_pv_cnn_src_addr;
             break;
-        case DST_ADDR:
+        case OUT_ADDR:
 
             /* Read pv_cnn destination address register.
              * This register is 32 bits */
@@ -376,14 +405,22 @@ pv_cnn::debug_read(int socket_id,
             }
             (* reinterpret_cast<unsigned int *>(data)) = m_pv_cnn_dst_addr;
             break;  
-        case LENGTH:
+        case WEIGHT_ADDR:
 
             /* Read pv_cnn length register. This register is 32 bits */
             if (length != 4) {
                 return 0;
             }
-            (* reinterpret_cast<unsigned int *>(data)) = m_pv_cnn_length;
+            (* reinterpret_cast<unsigned int *>(data)) = m_pv_cnn_weight;
             break;  
+        case BAISE_ADDR:
+            /* Read pv_cnn baise register. This register is 32 bits */
+            if (length != 4) {
+                return 0;
+            }
+            (* reinterpret_cast<unsigned int *>(data)) = m_pv_cnn_baise;
+            break;  
+
         case CONTROL: 
 
             /* Read pv_cnn control register. This register is 8 bits */
@@ -408,7 +445,7 @@ pv_cnn::debug_write(int socket_id,
                     unsigned int length,
                     const amba_pv::amba_pv_control * ctrl) {
     switch (addr) {
-        case SRC_ADDR:
+        case IN_ADDR:
 
             /* Write pv_cnn source address register. This register is 32 bits */
             if (length != 4) {
@@ -416,7 +453,7 @@ pv_cnn::debug_write(int socket_id,
             }
             m_pv_cnn_src_addr = (* reinterpret_cast<unsigned int *>(data));
             break;
-        case DST_ADDR:
+        case OUT_ADDR:
 
             /* Write pv_cnn destination address register.
              * This register is 32 bits */
@@ -425,14 +462,24 @@ pv_cnn::debug_write(int socket_id,
             }
             m_pv_cnn_dst_addr = (* reinterpret_cast<unsigned int *>(data));
             break;
-        case LENGTH:
+        case WEIGHT_ADDR:
 
-            /* Write CNN length register */      
+            /* Write CNN weight register */      
             if (length != 4) {
                 return 0;
             }
-            m_pv_cnn_length = (* reinterpret_cast<unsigned int *>(data));
+            m_pv_cnn_weight = (* reinterpret_cast<unsigned int *>(data));
             break;  
+
+        case BAISE_ADDR:
+
+            /* Write CNN baise register */      
+            if (length != 4) {
+                return 0;
+            }
+            m_pv_cnn_baise = (* reinterpret_cast<unsigned int *>(data));
+            break;  
+
         case CONTROL: 
 
             /* Write pv_cnn control register. This register is 8 bits */
@@ -475,155 +522,263 @@ void pv_cnn::transfer() {
     sc_core::sc_time t = sc_core::SC_ZERO_TIME;
 
 
-    std::cout << "[  SC DBG  ]CNN test \n";
+    std::cout << "[  SC DBG  ] CNN test \n";
 
     if (m_pv_cnn_control & START) {
-        std::cout << "[  SC DBG  ]\t" << name() << std::showbase << std::hex;
-        std::cout << ": pv_cnn transfer started. Source address: ";
-        std::cout << m_pv_cnn_src_addr << " - destination address: ";
-        std::cout << m_pv_cnn_dst_addr << " - length: " << std::dec;
-        std::cout << m_pv_cnn_length << " (bytes)\n";
-     
+        if (m_pv_cnn_baise) {
+            std::cout << "[  SC DBG  ] [ CNN ] \t" << name() << std::showbase << std::hex;
+            std::cout << ": pv_cnn CNN started. Source address: ";
+            std::cout << m_pv_cnn_src_addr << " - destination address: ";
+            std::cout << m_pv_cnn_dst_addr << " - length: " << std::dec;
+            std::cout << m_pv_cnn_weight << " - weight: " << std::dec;
+            std::cout << m_pv_cnn_baise << " baise\n";
+            /*
+            * Starts the memory transfer...
+            */
         /*
-         * Starts the memory transfer...
-         */
-        size_t nb_word = (m_pv_cnn_length + sizeof(data_t) - 1)
-                         / sizeof(data_t);
-        data_t * tmp = new data_t[nb_word];
+            size_t nb_word = (m_pv_cnn_weight + sizeof(data_t) - 1)
+                            / (sizeof(data_t));
 
-        for (size_t n = 0; (n < nb_word); n += BURST_LENGTH) {
-            status = amba_pv_m.burst_read(0,
-                                          m_pv_cnn_src_addr + (n * sizeof(data_t)),
-                                          reinterpret_cast<unsigned char *>(tmp + n),
-                                          sc_dt::sc_min(BURST_LENGTH, nb_word - n),
-                                          sizeof(data_t),
-                                          NULL,
-                                          amba_pv::AMBA_PV_INCR,
-                                          t);
-            if (status != amba_pv::AMBA_PV_OKAY) {
-                SCX_REPORT_WARNING(name(),
-                                  "read memory failure at %p",
-                                  (void *) (m_pv_cnn_src_addr + (n * sizeof(data_t))));
-                std::cout << std::endl;
-                continue;
-            }
+        */
+            size_t nb_word = 4 * 4 * 3;
+            data_t * tmp = new data_t[nb_word];
 
-            /* Output source bock using debug transactions.... */
-            std::cout << "[  SC DBG  ]\t" << name() << std::dec
-                      << ": source block ("
-                      << sc_dt::sc_min(BURST_LENGTH, nb_word - n) * 8
-                      << " bytes) at " << std::showbase << std::hex
-                      << m_pv_cnn_src_addr + (n * sizeof(data_t))
-                      << "\n";
-            for (size_t i = 0;
-                 (i < sc_dt::sc_min(BURST_LENGTH, nb_word - n));
-                 i += 1) {
-                data_t tmp = 0xffffffff;
+            for (size_t n = 0; (n < nb_word); n += BURST_LENGTH) {
+                status = amba_pv_m.burst_read(0,
+                                            m_pv_cnn_src_addr + (n * sizeof(data_t)),
+                                            reinterpret_cast<unsigned char *>(tmp + n),
+                                            sc_dt::sc_min(BURST_LENGTH, nb_word - n),
+                                            sizeof(data_t),
+                                            NULL,
+                                            amba_pv::AMBA_PV_INCR,
+                                            t);
 
-                if (amba_pv_m.debug_read(m_pv_cnn_src_addr + (n + i) * sizeof(data_t),
-                                         reinterpret_cast<unsigned char *>(&tmp),
-                                         sizeof(tmp),
-                                         NULL) != sizeof(tmp)) {
+                status = amba_pv_m.burst_read(0,
+                                            m_pv_cnn_weight + (n * sizeof(data_t)),
+                                            reinterpret_cast<unsigned char *>(tmp + n),
+                                            3 * 3,
+                                            sizeof(data_t),
+                                            NULL,
+                                            amba_pv::AMBA_PV_INCR,
+                                            t);
+
+                // MAC operation
+/*
+                for (size_t i = 0;
+                    (i < sc_dt::sc_min(BURST_LENGTH, nb_word - n));
+                    i += 1) {
+                    data_t tmp = 0xffffffff;
+
+                    if (amba_pv_m.debug_read(m_pv_cnn_src_addr + (n + i) * sizeof(data_t),
+                                            reinterpret_cast<unsigned char *>(&tmp),
+                                            sizeof(tmp),
+                                            NULL) != sizeof(tmp)) {
+                        SCX_REPORT_WARNING(name(),
+                                        "debug_read() memory failure at %p",
+                                        (void *) ((n + i) * sizeof(data_t)));
+                    }
+
+                    std::cout << std::hex
+                            << resetiosflags(std::ios_base::showbase);
+                    if (! (i % 4)) {
+                        std::cout << "\t0x"
+                                << (m_pv_cnn_src_addr
+                                    + ((n + i) * sizeof(data_t)));
+                    }
+                    std::cout << ": 0x" << std::setfill('0')
+                            << std::setw(sizeof(data_t) * 2)
+                            << tmp;
+                    if (((i % 4) == 3)
+                        || (i == (sc_dt::sc_min(BURST_LENGTH, nb_word - n) - 1))) {
+                        std::cout << std::endl;
+                    }
+                }
+*/
+                /* Write destination block */
+                status = amba_pv_m.burst_write(0,
+                                            m_pv_cnn_dst_addr + (n * sizeof(data_t)),
+                                            reinterpret_cast<unsigned char *>(tmp + n),
+                                            sc_dt::sc_min(BURST_LENGTH, nb_word - n),
+                                            sizeof(data_t),
+                                            NULL,
+                                            amba_pv::AMBA_PV_INCR,
+                                            NULL,
+                                            0,
+                                            t);
+
+                if (status != amba_pv::AMBA_PV_OKAY) {
                     SCX_REPORT_WARNING(name(),
-                                       "debug_read() memory failure at %p",
-                                       (void *) ((n + i) * sizeof(data_t)));
+                                    "write memory failure at %p",
+                                    (void *) (m_pv_cnn_dst_addr + (n * sizeof(data_t))));
+                    continue;
                 }
 
-                std::cout << std::hex
-                          << resetiosflags(std::ios_base::showbase);
-                if (! (i % 4)) {
-                    std::cout << "\t0x"
-                              << (m_pv_cnn_src_addr
-                                  + ((n + i) * sizeof(data_t)));
-                }
-                std::cout << ": 0x" << std::setfill('0')
-                          << std::setw(sizeof(data_t) * 2)
-                          << tmp;
-                if (((i % 4) == 3)
-                    || (i == (sc_dt::sc_min(BURST_LENGTH, nb_word - n) - 1))) {
-                    std::cout << std::endl;
+                if (status != amba_pv::AMBA_PV_OKAY) {
+                    continue;
                 }
             }
 
-            /* Write destination block */
-            status = amba_pv_m.burst_write(0,
-                                           m_pv_cnn_dst_addr + (n * sizeof(data_t)),
-                                           reinterpret_cast<unsigned char *>(tmp + n),
-                                           sc_dt::sc_min(BURST_LENGTH, nb_word - n),
-                                           sizeof(data_t),
-                                           NULL,
-                                           amba_pv::AMBA_PV_INCR,
-                                           NULL,
-                                           0,
-                                           t);
-            if (status != amba_pv::AMBA_PV_OKAY) {
-                SCX_REPORT_WARNING(name(),
-                                   "write memory failure at %p",
-                                   (void *) (m_pv_cnn_dst_addr + (n * sizeof(data_t))));
-                continue;
+            delete [] tmp;
+    
+            /* Clear the START bit of the control register */
+            m_pv_cnn_control &= ~START;
+
+            /* Interrupt generation */
+            if (! (m_pv_cnn_control & IRQ)) {
+                m_pv_cnn_control |= IRQ;
+                m_irq_to_change.notify(t);
             }
 
-            /* Verify destination block */
-            status = amba_pv_m.burst_read(0,
-                                          m_pv_cnn_dst_addr + (n * sizeof(data_t)),
-                                          reinterpret_cast<unsigned char *>(tmp + n),
-                                          sc_dt::sc_min(BURST_LENGTH, nb_word - n),
-                                          sizeof(data_t),
-                                          NULL,
-                                          amba_pv::AMBA_PV_INCR,
-                                          t);
-
-            if (status != amba_pv::AMBA_PV_OKAY) {
-                continue;
-            }
-
-            /* Output destination bock using debug transactions... */
-            std::cout << "[  SC DBG  ]\t" << name() << std::dec
-                      << ": destination block ("
-                      << sc_dt::sc_min(BURST_LENGTH, nb_word - n) * 8
-                      << " bytes) at " << std::showbase << std::hex
-                      << m_pv_cnn_dst_addr + (n * sizeof(data_t))
-                      << "\n";
-            for (size_t i = 0;
-                 (i < sc_dt::sc_min(BURST_LENGTH, nb_word - n));
-                 i += 1) {
-                data_t tmp = 0xffffffff;
-
-                if (amba_pv_m.debug_read(m_pv_cnn_dst_addr+ (n + i) * sizeof(data_t),
-                                         reinterpret_cast<unsigned char *>(&tmp),
-                                         sizeof(tmp),
-                                         NULL) != sizeof(tmp)) {
-                    SCX_REPORT_WARNING(name(),
-                                       "debug_read() memory failure at %p",
-                                       (void *) ((n + i) * sizeof(data_t)));
-                }
-
-                std::cout << std::hex
-                          << resetiosflags (std::ios_base::showbase);
-                if (! (i % 4)) {
-                    std::cout << "\t0x"
-                              << (m_pv_cnn_dst_addr
-                                  + ((n + i) * sizeof(data_t)));
-                }
-                std::cout << ": 0x" << std::setfill('0')
-                          << std::setw(sizeof(data_t) * 2)
-                          << tmp;
-                if (((i % 4) == 3)
-                    || (i == (sc_dt::sc_min(BURST_LENGTH, nb_word - n) - 1))) {
-                    std::cout << std::endl;
-                }
-            }
         }
+        else {
+            std::cout << "[  SC DBG  ] [ DMA]\t" << name() << std::showbase << std::hex;
+            std::cout << ": pv_cnn transfer started. Source address: ";
+            std::cout << m_pv_cnn_src_addr << " - destination address: ";
+            std::cout << m_pv_cnn_dst_addr << " - length: " << std::dec;
+            std::cout << m_pv_cnn_weight << " - weight: " << std::dec;
+            std::cout << m_pv_cnn_baise << " baise\n";
+        
+            /*
+            * Starts the memory transfer...
+            */
+            size_t nb_word = (m_pv_cnn_weight + sizeof(data_t) - 1)
+                            / sizeof(data_t);
+            data_t * tmp = new data_t[nb_word];
 
-        delete [] tmp;
- 
-        /* Clear the START bit of the control register */
-        m_pv_cnn_control &= ~START;
+            for (size_t n = 0; (n < nb_word); n += BURST_LENGTH) {
+                status = amba_pv_m.burst_read(0,
+                                            m_pv_cnn_src_addr + (n * sizeof(data_t)),
+                                            reinterpret_cast<unsigned char *>(tmp + n),
+                                            sc_dt::sc_min(BURST_LENGTH, nb_word - n),
+                                            sizeof(data_t),
+                                            NULL,
+                                            amba_pv::AMBA_PV_INCR,
+                                            t);
+                if (status != amba_pv::AMBA_PV_OKAY) {
+                    SCX_REPORT_WARNING(name(),
+                                    "read memory failure at %p",
+                                    (void *) (m_pv_cnn_src_addr + (n * sizeof(data_t))));
+                    std::cout << std::endl;
+                    continue;
+                }
 
-        /* Interrupt generation */
-        if (! (m_pv_cnn_control & IRQ)) {
-            m_pv_cnn_control |= IRQ;
-            m_irq_to_change.notify(t);
+                /* Output source bock using debug transactions.... */
+                std::cout << "[  SC DBG  ]\t" << name() << std::dec
+                        << ": source block ("
+                        << sc_dt::sc_min(BURST_LENGTH, nb_word - n) * 8
+                        << " bytes) at " << std::showbase << std::hex
+                        << m_pv_cnn_src_addr + (n * sizeof(data_t))
+                        << "\n";
+                for (size_t i = 0;
+                    (i < sc_dt::sc_min(BURST_LENGTH, nb_word - n));
+                    i += 1) {
+                    data_t tmp = 0xffffffff;
+
+                    if (amba_pv_m.debug_read(m_pv_cnn_src_addr + (n + i) * sizeof(data_t),
+                                            reinterpret_cast<unsigned char *>(&tmp),
+                                            sizeof(tmp),
+                                            NULL) != sizeof(tmp)) {
+                        SCX_REPORT_WARNING(name(),
+                                        "debug_read() memory failure at %p",
+                                        (void *) ((n + i) * sizeof(data_t)));
+                    }
+
+                    std::cout << std::hex
+                            << resetiosflags(std::ios_base::showbase);
+                    if (! (i % 4)) {
+                        std::cout << "\t0x"
+                                << (m_pv_cnn_src_addr
+                                    + ((n + i) * sizeof(data_t)));
+                    }
+                    std::cout << ": 0x" << std::setfill('0')
+                            << std::setw(sizeof(data_t) * 2)
+                            << tmp;
+                    if (((i % 4) == 3)
+                        || (i == (sc_dt::sc_min(BURST_LENGTH, nb_word - n) - 1))) {
+                        std::cout << std::endl;
+                    }
+                }
+
+                /* Write destination block */
+                status = amba_pv_m.burst_write(0,
+                                            m_pv_cnn_dst_addr + (n * sizeof(data_t)),
+                                            reinterpret_cast<unsigned char *>(tmp + n),
+                                            sc_dt::sc_min(BURST_LENGTH, nb_word - n),
+                                            sizeof(data_t),
+                                            NULL,
+                                            amba_pv::AMBA_PV_INCR,
+                                            NULL,
+                                            0,
+                                            t);
+                if (status != amba_pv::AMBA_PV_OKAY) {
+                    SCX_REPORT_WARNING(name(),
+                                    "write memory failure at %p",
+                                    (void *) (m_pv_cnn_dst_addr + (n * sizeof(data_t))));
+                    continue;
+                }
+
+                /* Verify destination block */
+                status = amba_pv_m.burst_read(0,
+                                            m_pv_cnn_dst_addr + (n * sizeof(data_t)),
+                                            reinterpret_cast<unsigned char *>(tmp + n),
+                                            sc_dt::sc_min(BURST_LENGTH, nb_word - n),
+                                            sizeof(data_t),
+                                            NULL,
+                                            amba_pv::AMBA_PV_INCR,
+                                            t);
+
+                if (status != amba_pv::AMBA_PV_OKAY) {
+                    continue;
+                }
+
+                /* Output destination bock using debug transactions... */
+                std::cout << "[  SC DBG  ]\t" << name() << std::dec
+                        << ": destination block ("
+                        << sc_dt::sc_min(BURST_LENGTH, nb_word - n) * 8
+                        << " bytes) at " << std::showbase << std::hex
+                        << m_pv_cnn_dst_addr + (n * sizeof(data_t))
+                        << "\n";
+                for (size_t i = 0;
+                    (i < sc_dt::sc_min(BURST_LENGTH, nb_word - n));
+                    i += 1) {
+                    data_t tmp = 0xffffffff;
+
+                    if (amba_pv_m.debug_read(m_pv_cnn_dst_addr+ (n + i) * sizeof(data_t),
+                                            reinterpret_cast<unsigned char *>(&tmp),
+                                            sizeof(tmp),
+                                            NULL) != sizeof(tmp)) {
+                        SCX_REPORT_WARNING(name(),
+                                        "debug_read() memory failure at %p",
+                                        (void *) ((n + i) * sizeof(data_t)));
+                    }
+
+                    std::cout << std::hex
+                            << resetiosflags (std::ios_base::showbase);
+                    if (! (i % 4)) {
+                        std::cout << "\t0x"
+                                << (m_pv_cnn_dst_addr
+                                    + ((n + i) * sizeof(data_t)));
+                    }
+                    std::cout << ": 0x" << std::setfill('0')
+                            << std::setw(sizeof(data_t) * 2)
+                            << tmp;
+                    if (((i % 4) == 3)
+                        || (i == (sc_dt::sc_min(BURST_LENGTH, nb_word - n) - 1))) {
+                        std::cout << std::endl;
+                    }
+                }
+            }
+
+            delete [] tmp;
+    
+            /* Clear the START bit of the control register */
+            m_pv_cnn_control &= ~START;
+
+            /* Interrupt generation */
+            if (! (m_pv_cnn_control & IRQ)) {
+                m_pv_cnn_control |= IRQ;
+                m_irq_to_change.notify(t);
+            }
         }
     }
 }
