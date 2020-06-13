@@ -400,7 +400,10 @@ int main(void) {
 
 #if 1
     total_time = cnn_time_read_reset();
-    cnn_acc(0x1000, 0x34002000, 0x3000, 0x4000);
+
+//    cnn_acc(0x1000, 0x34002000, 0x3000, 0x4000);
+    run1();
+    total_time = cnn_time_read_reset();
     printf("\n\n\t[  CPU  ] cnn.c: CNN_ACC stamp: %x\n", (uint32_t) total_time);
 #else
     total_time = cnn_time_read_reset();

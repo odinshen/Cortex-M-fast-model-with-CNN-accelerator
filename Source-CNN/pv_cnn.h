@@ -12,6 +12,8 @@
 #include <amba_pv.h>
 #include "types.h"
 
+#define SC_NS 2 
+
 /* Datatypes */
 
 class pv_cnn:

@@ -521,8 +521,8 @@ void pv_cnn::transfer() {
     amba_pv::amba_pv_resp_t status;
     sc_core::sc_time t = sc_core::SC_ZERO_TIME;
 
-
     std::cout << "[  SC DBG  ] CNN test \n";
+    std::cout << "\t\t\t Transfer Time: " << sc_core::sc_time_stamp().value() << std::endl;
 
     if (m_pv_cnn_control & START) {
         if (m_pv_cnn_baise) {
@@ -541,63 +541,55 @@ void pv_cnn::transfer() {
 
         */
             size_t nb_word = 4 * 4 * 3;
-            data_t * tmp = new data_t[nb_word];
+            data_t * input = new data_t[nb_word];
+            data_t * weight = new data_t[3 * 3];
+            data_t * output = new data_t[nb_word];
 
+            status = amba_pv_m.burst_read(0,
+                                        m_pv_cnn_weight,
+                                        reinterpret_cast<unsigned char *>(weight),
+                                        3 * 3,
+                                        sizeof(data_t),
+                                        NULL,
+                                        amba_pv::AMBA_PV_INCR,
+                                        t);
+        /*
+            if (status != amba_pv::AMBA_PV_OKAY) {
+                SCX_REPORT_WARNING(
+                    name(), 
+                    "read weight failure at %p",
+                    (void *) (m_pv_cnn_src_addr)
+                );
+                std::cout << std::endl;
+            }
+        */
             for (size_t n = 0; (n < nb_word); n += BURST_LENGTH) {
                 status = amba_pv_m.burst_read(0,
                                             m_pv_cnn_src_addr + (n * sizeof(data_t)),
-                                            reinterpret_cast<unsigned char *>(tmp + n),
+                                            reinterpret_cast<unsigned char *>(input + n),
                                             sc_dt::sc_min(BURST_LENGTH, nb_word - n),
                                             sizeof(data_t),
                                             NULL,
                                             amba_pv::AMBA_PV_INCR,
                                             t);
 
-                status = amba_pv_m.burst_read(0,
-                                            m_pv_cnn_weight + (n * sizeof(data_t)),
-                                            reinterpret_cast<unsigned char *>(tmp + n),
-                                            3 * 3,
-                                            sizeof(data_t),
-                                            NULL,
-                                            amba_pv::AMBA_PV_INCR,
-                                            t);
-
-                // MAC operation
-/*
-                for (size_t i = 0;
-                    (i < sc_dt::sc_min(BURST_LENGTH, nb_word - n));
-                    i += 1) {
-                    data_t tmp = 0xffffffff;
-
-                    if (amba_pv_m.debug_read(m_pv_cnn_src_addr + (n + i) * sizeof(data_t),
-                                            reinterpret_cast<unsigned char *>(&tmp),
-                                            sizeof(tmp),
-                                            NULL) != sizeof(tmp)) {
-                        SCX_REPORT_WARNING(name(),
-                                        "debug_read() memory failure at %p",
-                                        (void *) ((n + i) * sizeof(data_t)));
-                    }
-
-                    std::cout << std::hex
-                            << resetiosflags(std::ios_base::showbase);
-                    if (! (i % 4)) {
-                        std::cout << "\t0x"
-                                << (m_pv_cnn_src_addr
-                                    + ((n + i) * sizeof(data_t)));
-                    }
-                    std::cout << ": 0x" << std::setfill('0')
-                            << std::setw(sizeof(data_t) * 2)
-                            << tmp;
-                    if (((i % 4) == 3)
-                        || (i == (sc_dt::sc_min(BURST_LENGTH, nb_word - n) - 1))) {
-                        std::cout << std::endl;
-                    }
+                if (status != amba_pv::AMBA_PV_OKAY) {
+                    SCX_REPORT_WARNING(name(),
+                                    "read input failure at %p",
+                                    (void *) (m_pv_cnn_src_addr + (n * sizeof(data_t))));
+                    std::cout << std::endl;
+                    continue;
                 }
-*/
+
+                //
+                // MAC operation
+                // input x weight --> output
+                //
+
                 /* Write destination block */
                 status = amba_pv_m.burst_write(0,
                                             m_pv_cnn_dst_addr + (n * sizeof(data_t)),
-                                            reinterpret_cast<unsigned char *>(tmp + n),
+                                            reinterpret_cast<unsigned char *>(output + n),
                                             sc_dt::sc_min(BURST_LENGTH, nb_word - n),
                                             sizeof(data_t),
                                             NULL,
@@ -618,7 +610,9 @@ void pv_cnn::transfer() {
                 }
             }
 
-            delete [] tmp;
+            delete [] input;
+            delete [] weight;
+            delete [] output;
     
             /* Clear the START bit of the control register */
             m_pv_cnn_control &= ~START;
@@ -631,6 +625,7 @@ void pv_cnn::transfer() {
 
         }
         else {
+        #if 1
             std::cout << "[  SC DBG  ] [ DMA]\t" << name() << std::showbase << std::hex;
             std::cout << ": pv_cnn transfer started. Source address: ";
             std::cout << m_pv_cnn_src_addr << " - destination address: ";
@@ -644,8 +639,17 @@ void pv_cnn::transfer() {
             size_t nb_word = (m_pv_cnn_weight + sizeof(data_t) - 1)
                             / sizeof(data_t);
             data_t * tmp = new data_t[nb_word];
-
+        
             for (size_t n = 0; (n < nb_word); n += BURST_LENGTH) {
+
+                std::cout << "\t\t\t Transfer loop " << sc_core::sc_time_stamp().value() << std::endl;
+//                sc_core::next_trigger(2);
+                m_start_transfer.notify(t);
+                m_start_transfer.notify(t);
+                m_start_transfer.notify(t);
+                m_start_transfer.notify(t);
+                std::cout << "\t\t\t Transfer loop " << sc_core::sc_time_stamp().value() << std::endl;
+
                 status = amba_pv_m.burst_read(0,
                                             m_pv_cnn_src_addr + (n * sizeof(data_t)),
                                             reinterpret_cast<unsigned char *>(tmp + n),
@@ -654,6 +658,8 @@ void pv_cnn::transfer() {
                                             NULL,
                                             amba_pv::AMBA_PV_INCR,
                                             t);
+                std::cout << "\t\t\t Transfer loop after read" << sc_core::sc_time_stamp().value() << std::endl;
+
                 if (status != amba_pv::AMBA_PV_OKAY) {
                     SCX_REPORT_WARNING(name(),
                                     "read memory failure at %p",
@@ -661,7 +667,6 @@ void pv_cnn::transfer() {
                     std::cout << std::endl;
                     continue;
                 }
-
                 /* Output source bock using debug transactions.... */
                 std::cout << "[  SC DBG  ]\t" << name() << std::dec
                         << ": source block ("
@@ -710,6 +715,8 @@ void pv_cnn::transfer() {
                                             NULL,
                                             0,
                                             t);
+                std::cout << "\t\t\t Transfer loop after write" << sc_core::sc_time_stamp().value() << std::endl;
+
                 if (status != amba_pv::AMBA_PV_OKAY) {
                     SCX_REPORT_WARNING(name(),
                                     "write memory failure at %p",
@@ -773,7 +780,7 @@ void pv_cnn::transfer() {
     
             /* Clear the START bit of the control register */
             m_pv_cnn_control &= ~START;
-
+        #endif
             /* Interrupt generation */
             if (! (m_pv_cnn_control & IRQ)) {
                 m_pv_cnn_control |= IRQ;
