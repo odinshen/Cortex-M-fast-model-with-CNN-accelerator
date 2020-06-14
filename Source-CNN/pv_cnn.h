@@ -37,6 +37,9 @@ class pv_cnn:
         static const unsigned char START;
         static const unsigned char IRQ;
 
+    /* CNN ACC control parameter */
+        static unsigned int AccDelay;
+
     /* Module ports */
         amba_pv::amba_pv_slave_socket<BUSWIDTH> amba_pv_s;
         amba_pv::amba_pv_master_socket<BUSWIDTH> amba_pv_m;

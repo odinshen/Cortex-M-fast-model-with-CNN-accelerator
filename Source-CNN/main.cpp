@@ -38,6 +38,7 @@ int sc_main(int argc , char * argv[]) {
     /* From command-line options */
     scx::scx_parse_and_configure(argc, argv);
 
+    int delay;
     /* Semi-hosting configuration */
     bool v;
 
@@ -65,6 +66,11 @@ int sc_main(int argc , char * argv[]) {
         scx::scx_set_parameter("*.Core.semihosting-heap_limit", 0x1000000);
         scx::scx_set_parameter("*.Core.semihosting-stack_base", 0x33000000);
         scx::scx_set_parameter("*.Core.semihosting-stack_limit", 0x1000000);
+    }
+
+    if (scx::scx_get_parameter("DMA.Core.AccDelay", delay)) {
+        pv_cnn.AccDelay = delay;
+        std::cout << "[  SC MAIN  ]\t" << pv_cnn.AccDelay << std::hex;
     }
 
     /* Simulation quantum, i.e. seconds to run per quantum */

@@ -31,6 +31,9 @@ const addr_t pv_cnn::MONITOR4   = MONITOR3 + sizeof(data_t);
 const unsigned char pv_cnn::START = 0x01;
 const unsigned char pv_cnn::IRQ   = 0x10;
 
+/* CNN ACC control parameter */
+unsigned int pv_cnn::AccDelay = 0x4;
+
 unsigned long cnn_time_stamp = 0;
 
 /* Functions */
@@ -294,17 +297,17 @@ pv_cnn::write(int id,
             std::cout << " in pv_cnn baise register\n";
             break;  
 
-        case CONTROL: 
-
+        case CONTROL:
             /* Write pv_cnn control register. This register is 8 bits */
+            std::cout << "\t\t\t Write Control " << sc_core::sc_time_stamp().value() << std::endl;
             if (size != 1) {
                 SC_REPORT_WARNING(name(),
                                   "invalid write access on control register");
                 return (amba_pv::AMBA_PV_SLVERR);
-            }
             std::cout << "[  SC DBG  ]\t" << name() << std::showbase << std::hex;
             std::cout << ": write " << (unsigned int) (* data);
             std::cout << " in pv_cnn control register\n";
+            }    
             if (((* data) & START) && (!( m_pv_cnn_control & START))) {
                 m_start_transfer.notify(t);
                 m_pv_cnn_control |= START;
@@ -506,6 +509,7 @@ pv_cnn::debug_write(int socket_id,
 void pv_cnn::irq() {
     if (m_pv_cnn_control & IRQ) {
         std::cout << "[  SC DBG  ]\t" << name() << ": rise end transfer IRQ \n";
+        std::cout << "\t\t\t Raise Interrupt" << sc_core::sc_time_stamp().value() << std::endl;
         pv_cnn_irq_out.set_state(true);
     } else {
         std::cout << "[  SC DBG  ]\t" << name() << ": clear end transfer IRQ \n";
@@ -529,21 +533,19 @@ void pv_cnn::transfer() {
             std::cout << "[  SC DBG  ] [ CNN ] \t" << name() << std::showbase << std::hex;
             std::cout << ": pv_cnn CNN started. Source address: ";
             std::cout << m_pv_cnn_src_addr << " - destination address: ";
-            std::cout << m_pv_cnn_dst_addr << " - length: " << std::dec;
-            std::cout << m_pv_cnn_weight << " - weight: " << std::dec;
+            std::cout << m_pv_cnn_dst_addr << " - length: ";
+            std::cout << m_pv_cnn_weight << " - weight: ";
             std::cout << m_pv_cnn_baise << " baise\n";
             /*
             * Starts the memory transfer...
             */
-        /*
-            size_t nb_word = (m_pv_cnn_weight + sizeof(data_t) - 1)
-                            / (sizeof(data_t));
 
-        */
-            size_t nb_word = 4 * 4 * 3;
+            size_t nb_word = 4 * 4 * 3;  // input size: 32bit x 32bit x RBG
+
             data_t * input = new data_t[nb_word];
-            data_t * weight = new data_t[3 * 3];
             data_t * output = new data_t[nb_word];
+            data_t * weight = new data_t[3 * 3];
+            data_t * baise = new data_t[nb_word];
 
             status = amba_pv_m.burst_read(0,
                                         m_pv_cnn_weight,
@@ -563,6 +565,26 @@ void pv_cnn::transfer() {
                 std::cout << std::endl;
             }
         */
+
+            status = amba_pv_m.burst_read(0,
+                                        m_pv_cnn_baise,
+                                        reinterpret_cast<unsigned char *>(baise),
+                                        3 * 3,
+                                        sizeof(data_t),
+                                        NULL,
+                                        amba_pv::AMBA_PV_INCR,
+                                        t);
+        /*
+            if (status != amba_pv::AMBA_PV_OKAY) {
+                SCX_REPORT_WARNING(
+                    name(), 
+                    "read weight failure at %p",
+                    (void *) (m_pv_cnn_src_addr)
+                );
+                std::cout << std::endl;
+            }
+        */
+
             for (size_t n = 0; (n < nb_word); n += BURST_LENGTH) {
                 status = amba_pv_m.burst_read(0,
                                             m_pv_cnn_src_addr + (n * sizeof(data_t)),
@@ -585,6 +607,14 @@ void pv_cnn::transfer() {
                 // MAC operation
                 // input x weight --> output
                 //
+                output[n] = input[n] * weight[n] + baise[n];
+                // Additional delay
+
+                std::cout << "\t\t\t MAC " << AccDelay << ": " << sc_core::sc_time_stamp().value() << std::endl;
+                for (unsigned int cycle = 0; (cycle < AccDelay); cycle++) {
+                    m_start_transfer.notify(t);
+//                    std::cout << "\t\t\t MAC " << sc_core::sc_time_stamp().value() << std::endl;
+                }
 
                 /* Write destination block */
                 status = amba_pv_m.burst_write(0,
@@ -613,7 +643,8 @@ void pv_cnn::transfer() {
             delete [] input;
             delete [] weight;
             delete [] output;
-    
+            delete [] baise;
+
             /* Clear the START bit of the control register */
             m_pv_cnn_control &= ~START;
 
@@ -622,7 +653,6 @@ void pv_cnn::transfer() {
                 m_pv_cnn_control |= IRQ;
                 m_irq_to_change.notify(t);
             }
-
         }
         else {
         #if 1
@@ -643,11 +673,6 @@ void pv_cnn::transfer() {
             for (size_t n = 0; (n < nb_word); n += BURST_LENGTH) {
 
                 std::cout << "\t\t\t Transfer loop " << sc_core::sc_time_stamp().value() << std::endl;
-//                sc_core::next_trigger(2);
-                m_start_transfer.notify(t);
-                m_start_transfer.notify(t);
-                m_start_transfer.notify(t);
-                m_start_transfer.notify(t);
                 std::cout << "\t\t\t Transfer loop " << sc_core::sc_time_stamp().value() << std::endl;
 
                 status = amba_pv_m.burst_read(0,

@@ -272,12 +272,15 @@ static void cnn_acc(
     /*
      * Starts DMA transfer...
      */
+    sc_time_stamp();
     printf("cnn.c: run(): starts CNN transfer...\n");
 
     /* Start the DMA transfer (control register witdh is 8 bits, the write value
      * must be aligned before write) */
     end_transfer = 0;
+    sc_time_stamp();
     (* CONTROL) = START;
+    sc_time_stamp();
 
     /* Verification: read DMA control register (8 bits value) */
     value = (* CONTROL);
@@ -400,9 +403,8 @@ int main(void) {
 
 #if 1
     total_time = cnn_time_read_reset();
-
-//    cnn_acc(0x1000, 0x34002000, 0x3000, 0x4000);
-    run1();
+    cnn_acc(0x34002400, 0x34002800, 0x34000000, 0x3400C000);
+//    run1();
     total_time = cnn_time_read_reset();
     printf("\n\n\t[  CPU  ] cnn.c: CNN_ACC stamp: %x\n", (uint32_t) total_time);
 #else
