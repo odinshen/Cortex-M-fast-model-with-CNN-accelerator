@@ -406,7 +406,7 @@ int main(void) {
     cnn_acc(0x34002400, 0x34002800, 0x34000000, 0x3400C000);
 //    run1();
     total_time = cnn_time_read_reset();
-    printf("\n\n\t[  CPU  ] cnn.c: CNN_ACC stamp: %x\n", (uint32_t) total_time);
+    printf("\n\n\t[  CPU  ] cnn.c: CNN_ACC stamp: %d\n", (uint32_t) total_time);
 #else
     total_time = cnn_time_read_reset();
     // software convolution 
@@ -417,7 +417,7 @@ int main(void) {
         (uint32_t *) 0x4000
     );
     total_time = cnn_time_read_reset();
-    printf("\n\n\t[  CPU  ] cnn.c: cnn stamp: %x\n", (uint32_t) total_time);
+    printf("\n\n\t[  CPU  ] cnn.c: cnn stamp: %d\n", (uint32_t) total_time);
 #endif
 
     printf("\n\n[  CPU  ] convolution() End\n\n");

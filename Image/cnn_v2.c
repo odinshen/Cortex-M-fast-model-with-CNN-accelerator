@@ -470,7 +470,7 @@ int main(void) {
         (uint32_t *) 0x4000
     );
     total_time = cnn_time_read_reset();
-    printf("\n\n\t[  CPU  ] cnn.c: cnn stamp: %x\n", (uint32_t) total_time);
+    printf("\n\n\t[  CPU  ] cnn.c: cnn stamp: %d\n", (uint32_t) total_time);
 #endif
 
     printf("\n\n[  CPU  ] convolution() End\n\n");
