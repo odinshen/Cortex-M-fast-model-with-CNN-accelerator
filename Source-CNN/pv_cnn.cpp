@@ -672,9 +672,6 @@ void pv_cnn::transfer() {
         
             for (size_t n = 0; (n < nb_word); n += BURST_LENGTH) {
 
-                std::cout << "\t\t\t Transfer loop " << sc_core::sc_time_stamp().value() << std::endl;
-                std::cout << "\t\t\t Transfer loop " << sc_core::sc_time_stamp().value() << std::endl;
-
                 status = amba_pv_m.burst_read(0,
                                             m_pv_cnn_src_addr + (n * sizeof(data_t)),
                                             reinterpret_cast<unsigned char *>(tmp + n),
@@ -683,8 +680,8 @@ void pv_cnn::transfer() {
                                             NULL,
                                             amba_pv::AMBA_PV_INCR,
                                             t);
-                std::cout << "\t\t\t Transfer loop after read" << sc_core::sc_time_stamp().value() << std::endl;
 
+            #if 0
                 if (status != amba_pv::AMBA_PV_OKAY) {
                     SCX_REPORT_WARNING(name(),
                                     "read memory failure at %p",
@@ -692,6 +689,7 @@ void pv_cnn::transfer() {
                     std::cout << std::endl;
                     continue;
                 }
+
                 /* Output source bock using debug transactions.... */
                 std::cout << "[  SC DBG  ]\t" << name() << std::dec
                         << ": source block ("
@@ -699,6 +697,9 @@ void pv_cnn::transfer() {
                         << " bytes) at " << std::showbase << std::hex
                         << m_pv_cnn_src_addr + (n * sizeof(data_t))
                         << "\n";
+            #endif
+
+            #if 0
                 for (size_t i = 0;
                     (i < sc_dt::sc_min(BURST_LENGTH, nb_word - n));
                     i += 1) {
@@ -728,6 +729,7 @@ void pv_cnn::transfer() {
                         std::cout << std::endl;
                     }
                 }
+            #endif
 
                 /* Write destination block */
                 status = amba_pv_m.burst_write(0,
@@ -740,14 +742,16 @@ void pv_cnn::transfer() {
                                             NULL,
                                             0,
                                             t);
-                std::cout << "\t\t\t Transfer loop after write" << sc_core::sc_time_stamp().value() << std::endl;
 
+            #if 0
+                std::cout << "\t\t\t Transfer loop after write" << sc_core::sc_time_stamp().value() << std::endl;
                 if (status != amba_pv::AMBA_PV_OKAY) {
                     SCX_REPORT_WARNING(name(),
                                     "write memory failure at %p",
                                     (void *) (m_pv_cnn_dst_addr + (n * sizeof(data_t))));
                     continue;
                 }
+            #endif
 
                 /* Verify destination block */
                 status = amba_pv_m.burst_read(0,
@@ -770,6 +774,7 @@ void pv_cnn::transfer() {
                         << " bytes) at " << std::showbase << std::hex
                         << m_pv_cnn_dst_addr + (n * sizeof(data_t))
                         << "\n";
+            #if 0
                 for (size_t i = 0;
                     (i < sc_dt::sc_min(BURST_LENGTH, nb_word - n));
                     i += 1) {
@@ -799,6 +804,7 @@ void pv_cnn::transfer() {
                         std::cout << std::endl;
                     }
                 }
+            #endif
             }
 
             delete [] tmp;

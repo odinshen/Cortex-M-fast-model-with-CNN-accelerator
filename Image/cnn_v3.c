@@ -403,10 +403,14 @@ int main(void) {
 
 #if 1
     total_time = cnn_time_read_reset();
-    cnn_acc(0x34002400, 0x34002800, 0x34000000, 0x3400C000);
-//    run1();
+    cnn_acc(
+        0x34002400, 
+        0x34002800, 
+        0x34000000, 
+        0x3400C000
+    );
     total_time = cnn_time_read_reset();
-    printf("\n\n\t[  CPU  ] cnn.c: CNN_ACC stamp: %d\n", (uint32_t) total_time);
+    printf("\n\n\t[  CPU  ] cnn.c: cnn stamp: %d Kcycle\n", (uint32_t) total_time/1000);
 #else
     total_time = cnn_time_read_reset();
     // software convolution 

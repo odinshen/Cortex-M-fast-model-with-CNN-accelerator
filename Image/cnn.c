@@ -236,72 +236,8 @@ static void run2(void) {
 
 }
 
-#if 0
-static void cnn_acc(
-    uint32_t input_addr,
-    uint32_t output_addr,
-    uint32_t weight_addr,
-    uint32_t biase__addr
-) {
-
-    uint32_t value = 0;
-
-    /*
-     * Programs DMA transfer...
-     */
-    printf("[  CPU  ] cnn.c: run(): configure CNN transfer...\n");
-
-    /* Write CNN input address register */
-    value = input_addr;
-    (* IN_ADDR) = value;
-
-    /* Write CNN output address register */
-    value = output_addr;
-    (* OUT_ADDR) = value;
-
-    /* Write WEIGHT address register */
-    value = weight_addr /* bytes */;
-    (* WEIGHT_ADDR) = value;
-
-    /* Write BIASE address register */
-    value = biase__addr /* bytes */;
-    (* BIASE_ADDR) = value;
-
-    mon_read();
-    
-    /*
-     * Starts DMA transfer...
-     */
-    sc_time_stamp();
-    printf("cnn.c: run(): starts CNN transfer...\n");
-
-    /* Start the DMA transfer (control register witdh is 8 bits, the write value
-     * must be aligned before write) */
-    end_transfer = 0;
-    sc_time_stamp();
-    (* CONTROL) = START;
-    sc_time_stamp();
-
-    /* Verification: read DMA control register (8 bits value) */
-    value = (* CONTROL);
-
-    /*
-     * Waiting for end of DMA transfer
-     */
-    while (1) {
-        if (end_transfer) {
-            break;
-        }
-    }
-    printf("cnn.c: run(): end of DMA transfer\n");
-
-    mon_read();
-
-}
-#endif
 
 /* CNN */
-
 static void convolution(
     uint32_t *inputs,
     uint32_t *outputs,
@@ -401,24 +337,18 @@ int main(void) {
     printf("\n\n[  CPU  ] convolution() Start\n\n");
     sc_time_stamp();
 
-#if 0
     total_time = cnn_time_read_reset();
-    cnn_acc(0x34002400, 0x34002800, 0x34000000, 0x3400C000);
-//    run1();
-    total_time = cnn_time_read_reset();
-    printf("\n\n\t[  CPU  ] cnn.c: CNN_ACC stamp: %d\n", (uint32_t) total_time);
-#else
-    total_time = cnn_time_read_reset();
-    // software convolution 
+    // software convolution
+
     convolution(
-        (uint32_t *) 0x1000, 
-        (uint32_t *) 0x2000, 
-        (uint32_t *) 0x3000, 
-        (uint32_t *) 0x4000
+        (uint32_t *) 0x35001000, 
+        (uint32_t *) 0x35002000, 
+        (uint32_t *) 0x35003000, 
+        (uint32_t *) 0x35004000
     );
+
     total_time = cnn_time_read_reset();
-    printf("\n\n\t[  CPU  ] cnn.c: cnn stamp: %d\n", (uint32_t) total_time);
-#endif
+    printf("\n\n\t[  CPU  ] cnn.c: cnn stamp: %d Kcycle\n", (uint32_t) total_time/1000);
 
     printf("\n\n[  CPU  ] convolution() End\n\n");
     sc_time_stamp();

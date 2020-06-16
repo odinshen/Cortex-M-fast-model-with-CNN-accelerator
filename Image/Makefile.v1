@@ -49,7 +49,8 @@ v6m/%.o: %.c
 wfi/%.o: %.c
 	$(CC) $(CFLAGS) $(WFICFLAGS) -c -o $@ $<
 
-all: cnn.axf cnn_v7m.axf cnn_v6m.axf cnn_wfi.axf
+#all: cnn.axf cnn_v7m.axf cnn_v6m.axf cnn_wfi.axf
+all: cnn_v7m.axf
 
 cnn.axf: v6 v6/cnn.o
 	$(LD) $(LDFLAGS) $(V6LDFLAGS) -o $@ v6/cnn.o

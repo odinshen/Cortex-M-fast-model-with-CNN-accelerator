@@ -265,10 +265,6 @@ static void cnn_mac(
         /* Write WEIGHT address register */
         value = weight_addr /* bytes */;
         (* WEIGHT_ADDR) = value;
-
-        /* Write BIASE address register */
-        value = biase__addr /* bytes */;
-        (* BIASE_ADDR) = value;
     }
 
     end_transfer = 0;
@@ -342,11 +338,11 @@ static void cnn_acc(
 #endif
 /* CNN */
 
-static void convolution(
-    uint32_t *inputs,
-    uint32_t *outputs,
-    uint32_t *weights,
-    uint32_t *biases
+static void convolution_v2(
+    uint32_t inputs,
+    uint32_t outputs,
+    uint32_t weights,
+    uint32_t biases
 ) {
     uint32_t lay_input_columns  = 32;
     uint32_t lay_input_row      = 32;
@@ -373,18 +369,20 @@ static void convolution(
     uint32_t kernel_result;
     
     uint32_t first_mac = 0;
+    (* BIASE_ADDR) = first_mac;
 
-    for (stride_row = 0; stride_row < lay_output_row; stride_row++) {
+    for (stride_row = 0; stride_row < lay_output_row/2; stride_row++) {
         for (stride_col = 0; stride_col < lay_output_columns; stride_col++) {
-            for (filter_row = 0; filter_row < lay_filter_row; filter_row++) {
-                for (filter_col = 0; filter_col < lay_filter_columns; filter_col++) {
                 #if 1
+                    printf("[%d]\n", first_mac);
+                    first_mac++;
+
                     cnn_mac(
                         first_mac,
-                        inputs[stride_row * lay_input_columns * lay_input_channel],
-                        outputs[stride_row * lay_output_columns * lay_output_channel],
-                        weights[0],
-                        biases[0]
+                        inputs + stride_row * lay_input_columns * lay_input_channel,
+                        outputs + stride_row * lay_output_columns * lay_output_channel,
+                        weights,
+                        biases
                     );
                     if (first_mac == 0) 
                         first_mac =1;
@@ -407,8 +405,6 @@ static void convolution(
                         }
                     }
                 #endif
-                }
-            }
         }
     }
 }
@@ -463,14 +459,20 @@ int main(void) {
 #else
     total_time = cnn_time_read_reset();
     // software convolution 
-    convolution(
+    convolution_v2(
+    /*
         (uint32_t *) 0x1000, 
         (uint32_t *) 0x2000, 
         (uint32_t *) 0x3000, 
         (uint32_t *) 0x4000
+    */
+        0x35001000, 
+        0x35002000, 
+        0x35003000, 
+        0x35004000
     );
     total_time = cnn_time_read_reset();
-    printf("\n\n\t[  CPU  ] cnn.c: cnn stamp: %d\n", (uint32_t) total_time);
+    printf("\n\n\t[  CPU  ] cnn.c: cnn stamp: %d Kcycle\n", (uint32_t) total_time/1000);
 #endif
 
     printf("\n\n[  CPU  ] convolution() End\n\n");

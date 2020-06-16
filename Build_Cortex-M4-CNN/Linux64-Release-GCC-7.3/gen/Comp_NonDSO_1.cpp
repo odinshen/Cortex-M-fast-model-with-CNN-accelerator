@@ -1070,31 +1070,31 @@ void Component__DMA::wire_connectionmap__0__()
 	amba_pv_s.connectTo(AMBAPVBridge->findPort("amba_pv_s"));
 	Clock1Hz->findPort("clk_out").connectTo(Clock100MHz->findPort("clk_in"));
 	AMBAPVBridge->findPort("pvbus_m").connectTo(PVBus->findPort("pvbus_s"));
-	tmp__.setName("tmp_addressmap_control");
-	tmp__.setParent(this);	tmp__.connectTo(PVBus->findPort("pvbus_m_range"));
-#line 30 "/home/odishe01/FastModel/FastModelsPortfolio_11.10/examples/SystemCExport/EVS_Platforms/EVS_DMA/LISA/DMA_Cortex-M4.lisa"
-	tmp__.mapRange(UINT64_C(0x00000000), UINT64_C(0x33FFFFFF), UINT64_C(0x00000000), UINT64_C(0x33FFFFFF))->connectTo(ProgMem->findPort("pvbus"));
-#line 1078 "./Linux64-Release-GCC-7.3/gen/Comp_NonDSO_1.cpp"
-	tmp__.disconnectFrom(PVBus->findPort("pvbus_m_range"));
-	tmp__.connectTo(PVBus->findPort("pvbus_m_range"));
-#line 31 "/home/odishe01/FastModel/FastModelsPortfolio_11.10/examples/SystemCExport/EVS_Platforms/EVS_DMA/LISA/DMA_Cortex-M4.lisa"
-	tmp__.mapRange(UINT64_C(0x34000000), UINT64_C(0x34004FFF), UINT64_C(0x34000000), UINT64_C(0x34004FFF))->connectTo(AMBAPVBus->findPort("pvbus_s"));
-#line 1083 "./Linux64-Release-GCC-7.3/gen/Comp_NonDSO_1.cpp"
-	tmp__.disconnectFrom(PVBus->findPort("pvbus_m_range"));
-	tmp__.connectTo(PVBus->findPort("pvbus_m_range"));
-#line 32 "/home/odishe01/FastModel/FastModelsPortfolio_11.10/examples/SystemCExport/EVS_Platforms/EVS_DMA/LISA/DMA_Cortex-M4.lisa"
-	tmp__.mapRange(UINT64_C(0x35000000), UINT64_C(0x35001FFF), UINT64_C(0x00000000), UINT64_C(0x00001FFF))->connectTo(SrcMem->findPort("pvbus"));
-#line 1088 "./Linux64-Release-GCC-7.3/gen/Comp_NonDSO_1.cpp"
-	tmp__.disconnectFrom(PVBus->findPort("pvbus_m_range"));
 	SignalBridge->findPort("sg_signal_m").connectTo(ReverseBridge->findPort("sg_signal_s"));
 	ReverseBridge->findPort("amba_pv_signal_m").connectTo(irq_out);
 	Core->findPort("pvbus_m").connectTo(PVBus->findPort("pvbus_s"));
+	Clock100MHz->findPort("clk_out").connectTo(Core->findPort("clk_in"));
+	SignalBridge->findPort("sg_signal_m").connectTo(Core->findPort("intnmi"));
+	tmp__.setName("tmp_addressmap_control");
+	tmp__.setParent(this);	tmp__.connectTo(PVBus->findPort("pvbus_m_range"));
+#line 35 "/home/odishe01/FastModel/FastModelsPortfolio_11.10/examples/SystemCExport/EVS_Platforms/EVS_DMA/LISA/DMA_Cortex-M4.lisa"
+	tmp__.mapRange(UINT64_C(0x00000000), UINT64_C(0x33FFFFFF), UINT64_C(0x00000000), UINT64_C(0x33FFFFFF))->connectTo(ProgMem->findPort("pvbus"));
+#line 1083 "./Linux64-Release-GCC-7.3/gen/Comp_NonDSO_1.cpp"
+	tmp__.disconnectFrom(PVBus->findPort("pvbus_m_range"));
 }
 
 void Component__DMA::wire_connectionmap__1__()
 {
-	Clock100MHz->findPort("clk_out").connectTo(Core->findPort("clk_in"));
-	SignalBridge->findPort("sg_signal_m").connectTo(Core->findPort("intnmi"));
+	tmp__.connectTo(PVBus->findPort("pvbus_m_range"));
+#line 36 "/home/odishe01/FastModel/FastModelsPortfolio_11.10/examples/SystemCExport/EVS_Platforms/EVS_DMA/LISA/DMA_Cortex-M4.lisa"
+	tmp__.mapRange(UINT64_C(0x34000000), UINT64_C(0x34004FFF), UINT64_C(0x34000000), UINT64_C(0x34004FFF))->connectTo(AMBAPVBus->findPort("pvbus_s"));
+#line 1092 "./Linux64-Release-GCC-7.3/gen/Comp_NonDSO_1.cpp"
+	tmp__.disconnectFrom(PVBus->findPort("pvbus_m_range"));
+	tmp__.connectTo(PVBus->findPort("pvbus_m_range"));
+#line 37 "/home/odishe01/FastModel/FastModelsPortfolio_11.10/examples/SystemCExport/EVS_Platforms/EVS_DMA/LISA/DMA_Cortex-M4.lisa"
+	tmp__.mapRange(UINT64_C(0x35000000), UINT64_C(0x3500FFFF), UINT64_C(0x00000000), UINT64_C(0x0000FFFF))->connectTo(SrcMem->findPort("pvbus"));
+#line 1097 "./Linux64-Release-GCC-7.3/gen/Comp_NonDSO_1.cpp"
+	tmp__.disconnectFrom(PVBus->findPort("pvbus_m_range"));
 }
 
 
