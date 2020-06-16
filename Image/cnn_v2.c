@@ -132,6 +132,7 @@ static void mon_read(void) {
 
 }
 
+#if 0
 /*
  * Testbench process.
  */
@@ -235,6 +236,46 @@ static void run2(void) {
     mon_read();
 
 }
+#endif
+
+static void cnn_mac(
+    uint32_t config_setting,
+    uint32_t input_addr,
+    uint32_t output_addr,
+    uint32_t weight_addr,
+    uint32_t biase__addr
+) {
+
+    uint32_t value = 0;
+
+    /*
+     * Programs DMA transfer...
+     */
+    printf("[  CPU  ] cnn.c: run(): configure CNN transfer...\n");
+
+    /* Write CNN input address register */
+    value = input_addr;
+    (* IN_ADDR) = value;
+
+    /* Write CNN output address register */
+    value = output_addr;
+    (* OUT_ADDR) = value;
+
+    if (config_setting == 0) {
+        /* Write WEIGHT address register */
+        value = weight_addr /* bytes */;
+        (* WEIGHT_ADDR) = value;
+
+        /* Write BIASE address register */
+        value = biase__addr /* bytes */;
+        (* BIASE_ADDR) = value;
+    }
+
+    end_transfer = 0;
+    (* CONTROL) = START;
+}
+
+
 
 #if 0
 static void cnn_acc(
@@ -299,7 +340,6 @@ static void cnn_acc(
 
 }
 #endif
-
 /* CNN */
 
 static void convolution(
@@ -331,11 +371,24 @@ static void convolution(
     uint32_t current_input;
     uint32_t current_result;
     uint32_t kernel_result;
+    
+    uint32_t first_mac = 0;
 
     for (stride_row = 0; stride_row < lay_output_row; stride_row++) {
         for (stride_col = 0; stride_col < lay_output_columns; stride_col++) {
             for (filter_row = 0; filter_row < lay_filter_row; filter_row++) {
                 for (filter_col = 0; filter_col < lay_filter_columns; filter_col++) {
+                #if 1
+                    cnn_mac(
+                        first_mac,
+                        inputs[stride_row * lay_input_columns * lay_input_channel],
+                        outputs[stride_row * lay_output_columns * lay_output_channel],
+                        weights[0],
+                        biases[0]
+                    );
+                    if (first_mac == 0) 
+                        first_mac =1;
+                #else
                     for (in_ch = 0; in_ch < lay_input_channel; in_ch++) {
                         current_input = ((float*)inputs)[  ((stride_row + filter_row) * lay_input_columns * lay_input_channel)
                                                         + ((stride_col + filter_col)                      * lay_input_channel)
@@ -353,12 +406,12 @@ static void convolution(
                                         += current_result;
                         }
                     }
+                #endif
                 }
             }
         }
     }
 }
-
 
 
 /*

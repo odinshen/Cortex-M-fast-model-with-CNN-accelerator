@@ -132,6 +132,7 @@ static void mon_read(void) {
 
 }
 
+#if 0
 /*
  * Testbench process.
  */
@@ -235,8 +236,8 @@ static void run2(void) {
     mon_read();
 
 }
+#endif
 
-#if 0
 static void cnn_acc(
     uint32_t input_addr,
     uint32_t output_addr,
@@ -298,10 +299,9 @@ static void cnn_acc(
     mon_read();
 
 }
-#endif
 
+#if 0
 /* CNN */
-
 static void convolution(
     uint32_t *inputs,
     uint32_t *outputs,
@@ -358,7 +358,7 @@ static void convolution(
         }
     }
 }
-
+#endif
 
 
 /*
@@ -401,7 +401,7 @@ int main(void) {
     printf("\n\n[  CPU  ] convolution() Start\n\n");
     sc_time_stamp();
 
-#if 0
+#if 1
     total_time = cnn_time_read_reset();
     cnn_acc(0x34002400, 0x34002800, 0x34000000, 0x3400C000);
 //    run1();
